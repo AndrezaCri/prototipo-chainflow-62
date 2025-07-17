@@ -20,11 +20,10 @@ interface Product {
 
 interface ProductCardProps {
   product: Product;
-  onAddToOrder: (product: Product) => void;
   onBuyNow: (product: Product) => void;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToOrder, onBuyNow }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ product, onBuyNow }) => {
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
       <div className="aspect-square bg-gray-100 rounded-lg mb-4 overflow-hidden">
@@ -53,21 +52,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToOrder,
           </div>
         </div>
         
-        <div className="flex gap-2 pt-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="flex-1"
-            onClick={() => onAddToOrder(product)}
-          >
-            Adicionar ao Pedido
-          </Button>
+        <div className="pt-2">
           <Button 
             size="sm" 
-            className="flex-1 bg-black hover:bg-gray-800"
+            className="w-full bg-primary hover:bg-primary/90"
             onClick={() => onBuyNow(product)}
           >
-            Comprar Agora
+            Comprar
           </Button>
         </div>
       </div>

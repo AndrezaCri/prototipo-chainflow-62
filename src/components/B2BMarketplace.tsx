@@ -155,8 +155,7 @@ export const B2BMarketplace: React.FC = () => {
               <ProductCard
                 key={product.id}
                 product={product}
-                onAddToOrder={handleAddToOrder}
-                onBuyNow={handleBuyNow}
+            onBuyNow={handleBuyNow}
               />
             ))}
           </div>
