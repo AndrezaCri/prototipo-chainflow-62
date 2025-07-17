@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 interface Product {
   id: string;
@@ -24,6 +25,15 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onBuyNow }) => {
+  const { toast } = useToast();
+
+  const handleAddToCart = () => {
+    toast({
+      title: "Produto adicionado ao carrinho",
+      description: `${product.name} foi adicionado ao seu carrinho.`,
+    });
+  };
+
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
       <div className="aspect-square bg-gray-100 rounded-lg mb-4 overflow-hidden">
@@ -56,7 +66,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onBuyNow }) =
           <Button 
             size="sm" 
             className="w-full bg-primary hover:bg-primary/90"
-            onClick={() => onBuyNow(product)}
+            onClick={handleAddToCart}
           >
             Comprar
           </Button>
