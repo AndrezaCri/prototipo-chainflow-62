@@ -29,6 +29,12 @@ All colors MUST be HSL.
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
 
+    --success: 142.1 76.2% 36.3%;
+    --success-foreground: 355.7 100% 97.3%;
+    
+    --warning: 32.6 94.6% 43.7%;
+    --warning-foreground: 222.2 84% 4.9%;
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
@@ -77,6 +83,12 @@ All colors MUST be HSL.
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
 
+    --success: 142.1 70.6% 45.3%;
+    --success-foreground: 144.9 80.4% 10%;
+    
+    --warning: 35.5 91.7% 32.9%;
+    --warning-foreground: 20.5 90.2% 48.2%;
+
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
@@ -101,5 +113,35 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Focus indicators for accessibility */
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+
+  /* Skip link for keyboard navigation */
+  .skip-link {
+    @apply absolute left-[-9999px] top-auto w-1 h-1 overflow-hidden;
+  }
+
+  .skip-link:focus {
+    @apply static w-auto h-auto overflow-visible bg-primary text-primary-foreground px-4 py-2 rounded-md z-50;
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .low-contrast {
+      @apply border-2;
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }

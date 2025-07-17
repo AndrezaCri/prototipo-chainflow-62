@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Search, ShoppingCart, User, Menu } from 'lucide-react';
 
 export const Header: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -12,10 +13,14 @@ export const Header: React.FC = () => {
   };
 
   return (
-    <header className="flex items-center justify-between bg-white px-[100px] py-6 border-b-[#f0f0f0] border-b border-solid max-md:px-10 max-md:py-5 max-sm:px-5 max-sm:py-4">
-      <div className="text-[32px] font-bold text-black max-sm:text-2xl">
-        ChainFlow
-      </div>
+    <>
+      <a href="#main-content" className="skip-link">
+        Pular para o conteúdo principal
+      </a>
+      <header className="flex items-center justify-between bg-background px-4 py-6 border-b border-border lg:px-24 md:px-10" role="banner">
+        <div className="text-2xl font-bold text-foreground lg:text-3xl">
+          ChainFlow
+        </div>
       
       <nav className="flex items-center gap-6 max-md:hidden">
        {/*div className="flex items-center cursor-pointer hover:opacity-70 transition-opacity">
@@ -36,33 +41,34 @@ export const Header: React.FC = () => {
         </Link>
       </nav>
       
-      <form onSubmit={handleSearch} className="relative w-[577px] max-md:w-[300px] max-sm:hidden">
-        <span className="absolute -translate-y-2/4 text-xl text-[#666666] left-4 top-2/4">🔍</span>
+      <form onSubmit={handleSearch} className="relative hidden w-96 sm:block lg:w-[500px]" role="search">
+        <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
         <input
           type="search"
-          placeholder="Search for products..."
+          placeholder="Buscar produtos..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full bg-[#f0f0f0] text-base font-normal text-black pl-12 pr-4 py-3 rounded-[62px] border-none focus:outline-none focus:ring-2 focus:ring-black/20"
-          aria-label="Search for products"
+          className="w-full rounded-full bg-muted py-3 pl-12 pr-4 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label="Buscar produtos"
         />
       </form>
       
-      <div className="flex items-center gap-3.5">
-        <button className="text-2xl text-black cursor-pointer hover:opacity-70 transition-opacity" aria-label="Shopping cart">
-          🛒
+      <div className="flex items-center gap-4">
+        <button className="rounded-full p-2 text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Carrinho de compras">
+          <ShoppingCart className="h-5 w-5" />
         </button>
-        <button className="text-2xl text-black cursor-pointer hover:opacity-70 transition-opacity" aria-label="User account">
-          👤
+        <button className="rounded-full p-2 text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Conta do usuário">
+          <User className="h-5 w-5" />
         </button>
       </div>
       
       <button 
-        className="hidden text-2xl text-black cursor-pointer max-md:block hover:opacity-70 transition-opacity"
+        className="rounded-full p-2 text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        aria-label="Toggle mobile menu"
+        aria-label="Abrir menu móvel"
+        aria-expanded={isMobileMenuOpen}
       >
-        ☰
+        <Menu className="h-5 w-5" />
       </button>
       
       {isMobileMenuOpen && (
@@ -87,5 +93,6 @@ export const Header: React.FC = () => {
         </div>
       )}
     </header>
+    </>
   );
 };

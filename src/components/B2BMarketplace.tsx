@@ -134,14 +134,14 @@ export const B2BMarketplace: React.FC = () => {
   };
 
   return (
-    <section className="bg-gray-50 py-12 px-[100px] max-md:px-10 max-sm:px-5">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Marketplace B2B</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+    <main id="main-content" className="bg-muted/30 py-12 px-4 lg:px-24 md:px-10">
+      <div className="mx-auto max-w-7xl">
+        <header className="mb-8 text-center">
+          <h1 className="mb-4 text-3xl font-bold text-foreground">Marketplace B2B</h1>
+          <p className="mx-auto max-w-2xl text-muted-foreground">
             Encontre os melhores produtos para o seu negócio com condições especiais de pagamento
           </p>
-        </div>
+        </header>
 
         <CategoryFilter
           categories={categories}
@@ -149,16 +149,18 @@ export const B2BMarketplace: React.FC = () => {
           onCategoryChange={setSelectedCategory}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onAddToOrder={handleAddToOrder}
-              onBuyNow={handleBuyNow}
-            />
-          ))}
-        </div>
+        <section aria-label="Lista de produtos">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {filteredProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onAddToOrder={handleAddToOrder}
+                onBuyNow={handleBuyNow}
+              />
+            ))}
+          </div>
+        </section>
 
         {cart.length > 0 && (
           <div className="fixed bottom-4 right-4 bg-black text-white px-4 py-2 rounded-lg shadow-lg">
@@ -166,7 +168,7 @@ export const B2BMarketplace: React.FC = () => {
           </div>
         )}
       </div>
-    </section>
+    </main>
   );
 };
 
