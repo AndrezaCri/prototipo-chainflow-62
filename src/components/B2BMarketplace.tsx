@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { ProductCard } from './ProductCard';
 import { CategoryFilter } from './CategoryFilter';
+import { CartDrawer } from './CartDrawer';
 
 interface Product {
   id: string;
@@ -114,23 +115,64 @@ const mockProducts: Product[] = [
 
 const categories = ['Alimentos', 'Bebidas', 'Embalagens'];
 
+interface CartItem {
+  id: string;
+  name: string;
+  image: string;
+  price: number;
+  unit: string;
+  quantity: number;
+  total: number;
+}
+
 export const B2BMarketplace: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [cart, setCart] = useState<Product[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const filteredProducts = selectedCategory === 'all' 
     ? mockProducts 
     : mockProducts.filter(product => product.category === selectedCategory);
 
-  const handleAddToOrder = (product: Product) => {
-    console.log('Adicionado ao pedido:', product.name);
-    setCart(prev => [...prev, product]);
-    // Aqui você implementaria a lógica para adicionar ao carrinho/pedido
+  const handleAddToCart = (product: Product, quantity: number) => {
+    const existingItemIndex = cart.findIndex(item => item.id === product.id);
+    
+    if (existingItemIndex >= 0) {
+      const updatedCart = [...cart];
+      updatedCart[existingItemIndex].quantity += quantity;
+      updatedCart[existingItemIndex].total = updatedCart[existingItemIndex].quantity * product.paymentTerms.cash;
+      setCart(updatedCart);
+    } else {
+      const newItem: CartItem = {
+        id: product.id,
+        name: product.name,
+        image: product.image,
+        price: product.paymentTerms.cash,
+        unit: product.unit,
+        quantity,
+        total: quantity * product.paymentTerms.cash
+      };
+      setCart(prev => [...prev, newItem]);
+    }
+    
+    setIsCartOpen(true);
   };
 
   const handleBuyNow = (product: Product) => {
     console.log('Comprar agora:', product.name);
     // Aqui você implementaria a lógica para compra imediata
+  };
+
+  const handleUpdateQuantity = (id: string, quantity: number) => {
+    setCart(prev => prev.map(item => 
+      item.id === id 
+        ? { ...item, quantity, total: quantity * item.price }
+        : item
+    ));
+  };
+
+  const handleRemoveItem = (id: string) => {
+    setCart(prev => prev.filter(item => item.id !== id));
   };
 
   return (
@@ -152,20 +194,32 @@ export const B2BMarketplace: React.FC = () => {
         <section aria-label="Lista de produtos">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-            onBuyNow={handleBuyNow}
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+                onBuyNow={handleBuyNow}
+                onAddToCart={handleAddToCart}
               />
             ))}
           </div>
         </section>
 
         {cart.length > 0 && (
-          <div className="fixed bottom-4 right-4 bg-black text-white px-4 py-2 rounded-lg shadow-lg">
-            Itens no pedido: {cart.length}
+          <div 
+            className="fixed bottom-4 right-4 bg-black text-white px-4 py-2 rounded-lg shadow-lg cursor-pointer hover:bg-gray-800 transition-colors"
+            onClick={() => setIsCartOpen(true)}
+          >
+            Itens no carrinho: {cart.length}
           </div>
         )}
+        
+        <CartDrawer
+          isOpen={isCartOpen}
+          onClose={() => setIsCartOpen(false)}
+          items={cart}
+          onUpdateQuantity={handleUpdateQuantity}
+          onRemoveItem={handleRemoveItem}
+        />
       </div>
     </main>
   );

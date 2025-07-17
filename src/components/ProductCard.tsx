@@ -25,9 +25,10 @@ interface Product {
 interface ProductCardProps {
   product: Product;
   onBuyNow: (product: Product) => void;
+  onAddToCart: (product: Product, quantity: number) => void;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, onBuyNow }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ product, onBuyNow, onAddToCart }) => {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [quantity, setQuantity] = useState(product.minOrder);
@@ -38,6 +39,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onBuyNow }) =
   };
 
   const handleAddToCart = () => {
+    onAddToCart(product, quantity);
     toast({
       title: "Produto adicionado ao carrinho",
       description: `${quantity} ${product.unit} de ${product.name} adicionado ao carrinho.`,
