@@ -17,9 +17,9 @@ export const PortfolioDashboard: React.FC = () => {
   };
 
   const positions = [
-    { restaurant: 'Bella Italia', amount: 25000, maturity: '2024-02-15', yield: 9.2 },
-    { restaurant: 'Sushi Master', amount: 18000, maturity: '2024-02-28', yield: 8.7 },
-    { restaurant: 'Burger Palace', amount: 32000, maturity: '2024-03-10', yield: 7.8 },
+    { pool: 'Lending Pool 30D', amount: 25000, maturity: '2024-02-15', yield: 9.2 },
+    { pool: 'Lending Pool 60D', amount: 18000, maturity: '2024-02-28', yield: 8.7 },
+    { pool: 'Lending Pool 90D', amount: 32000, maturity: '2024-03-10', yield: 7.8 },
   ];
 
   return (
@@ -29,7 +29,7 @@ export const PortfolioDashboard: React.FC = () => {
           PORTFOLIO OVERVIEW
         </h2>
         <p className="text-base font-normal text-[#666666] max-w-2xl mx-auto">
-          Track your investments and performance across all tokenized receivables
+          Track your investments and performance across all DeFi pools
         </p>
       </div>
       
@@ -79,7 +79,7 @@ export const PortfolioDashboard: React.FC = () => {
           {positions.map((position, index) => (
             <div key={index} className="flex items-center justify-between py-4 px-6 bg-[#f0f0f0] rounded-[20px]">
               <div>
-                <div className="text-base font-bold text-black">{position.restaurant}</div>
+                <div className="text-base font-bold text-black">{position.pool}</div>
                 <div className="text-sm font-normal text-[#666666]">
                   Maturity: {new Date(position.maturity).toLocaleDateString()}
                 </div>
