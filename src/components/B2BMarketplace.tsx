@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-
 import React, { useState } from 'react';
 import { ProductCard } from './ProductCard';
 import { CategoryFilter } from './CategoryFilter';
@@ -54,137 +52,138 @@ const mockProducts: Product[] = [
   },
   {
     id: '3',
-    name: 'Embalagem Plástica Transparente 500ml - Pacote 100un',
-    category: 'Embalagens',
-    price: 32.90,
-    unit: 'pct',
-    minOrder: 10,
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=400&fit=crop',
+    name: 'Papel Higiênico 30m - Fardo 64 rolos',
+    category: 'Higiene',
+    price: 127.80,
+    unit: 'fd',
+    minOrder: 1,
+    image: 'https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=400&h=400&fit=crop',
     paymentTerms: {
-      cash: 32.90,
-      days30: 34.20,
-      days60: 35.50,
-      days90: 36.80
+      cash: 127.80,
+      days30: 132.90,
+      days60: 138.00,
+      days90: 143.10
     }
   },
   {
     id: '4',
-    name: 'Farinha de Trigo Especial - Saco 25kg',
+    name: 'Arroz Longo 5kg - Saco',
     category: 'Alimentos',
-    price: 45.80,
+    price: 24.90,
     unit: 'sc',
-    minOrder: 3,
-    image: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400&h=400&fit=crop',
+    minOrder: 10,
+    image: 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=400&h=400&fit=crop',
     paymentTerms: {
-      cash: 45.80,
-      days30: 47.60,
-      days60: 49.40,
-      days90: 51.20
+      cash: 24.90,
+      days30: 25.90,
+      days60: 26.90,
+      days90: 27.90
     }
   },
   {
     id: '5',
-    name: 'Suco Natural Laranja 1L - Caixa 12un',
-    category: 'Bebidas',
-    price: 65.90,
+    name: 'Sabão em Pó 2kg - Caixa 12un',
+    category: 'Limpeza',
+    price: 89.70,
     unit: 'cx',
-    minOrder: 2,
-    image: 'https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=400&h=400&fit=crop',
+    minOrder: 3,
+    image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&h=400&fit=crop',
     paymentTerms: {
-      cash: 65.90,
-      days30: 68.50,
-      days60: 71.10,
-      days90: 73.70
+      cash: 89.70,
+      days30: 93.20,
+      days60: 96.70,
+      days90: 100.20
     }
   },
   {
     id: '6',
-    name: 'Caixas de Papelão 30x30x20cm - Pacote 50un',
-    category: 'Embalagens',
-    price: 85.00,
-    unit: 'pct',
+    name: 'Água Mineral 500ml - Caixa 24un',
+    category: 'Bebidas',
+    price: 18.90,
+    unit: 'cx',
     minOrder: 5,
-    image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400&h=400&fit=crop',
     paymentTerms: {
-      cash: 85.00,
-      days30: 88.40,
-      days60: 91.80,
-      days90: 95.20
+      cash: 18.90,
+      days30: 19.65,
+      days60: 20.40,
+      days90: 21.15
     }
   }
 ];
 
-const categories = ['Alimentos', 'Bebidas', 'Embalagens'];
-
-interface CartItem {
-  id: string;
-  name: string;
-  image: string;
-  price: number;
-  unit: string;
+interface CartItem extends Product {
   quantity: number;
-  total: number;
 }
 
 export const B2BMarketplace: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const categories = Array.from(new Set(mockProducts.map(product => product.category)));
 
   const filteredProducts = selectedCategory === 'all' 
     ? mockProducts 
     : mockProducts.filter(product => product.category === selectedCategory);
 
-  const handleAddToCart = (product: Product, quantity: number) => {
-    const existingItemIndex = cart.findIndex(item => item.id === product.id);
-    
-    if (existingItemIndex >= 0) {
-      const updatedCart = [...cart];
-      updatedCart[existingItemIndex].quantity += quantity;
-      updatedCart[existingItemIndex].total = updatedCart[existingItemIndex].quantity * product.paymentTerms.cash;
-      setCart(updatedCart);
-    } else {
-      const newItem: CartItem = {
-        id: product.id,
-        name: product.name,
-        image: product.image,
-        price: product.paymentTerms.cash,
-        unit: product.unit,
-        quantity,
-        total: quantity * product.paymentTerms.cash
-      };
-      setCart(prev => [...prev, newItem]);
-    }
-    
-    setIsCartOpen(true);
-  };
-
   const handleBuyNow = (product: Product) => {
-    console.log('Comprar agora:', product.name);
-    // Aqui você implementaria a lógica para compra imediata
+    console.log('Buy now:', product);
   };
 
-  const handleUpdateQuantity = (id: string, quantity: number) => {
-    setCart(prev => prev.map(item => 
-      item.id === id 
-        ? { ...item, quantity, total: quantity * item.price }
-        : item
-    ));
+  const handleAddToCart = (product: Product, quantity: number) => {
+    setCartItems(prevItems => {
+      const existingItem = prevItems.find(item => item.id === product.id);
+      if (existingItem) {
+        return prevItems.map(item =>
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        );
+      }
+      return [...prevItems, { ...product, quantity }];
+    });
+  };
+
+  const handleUpdateQuantity = (id: string, newQuantity: number) => {
+    if (newQuantity <= 0) {
+      handleRemoveItem(id);
+      return;
+    }
+    setCartItems(prevItems =>
+      prevItems.map(item =>
+        item.id === id ? { ...item, quantity: newQuantity } : item
+      )
+    );
   };
 
   const handleRemoveItem = (id: string) => {
-    setCart(prev => prev.filter(item => item.id !== id));
+    setCartItems(prevItems => prevItems.filter(item => item.id !== id));
   };
 
+  const cartTotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+  const cartItemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+
   return (
-    <main id="main-content" className="bg-muted/30 py-12 px-4 lg:px-24 md:px-10">
-      <div className="mx-auto max-w-7xl">
-        <header className="mb-8 text-center">
-          <h1 className="mb-4 text-3xl font-bold text-foreground">Marketplace B2B</h1>
-          <p className="mx-auto max-w-2xl text-muted-foreground">
-            Encontre os melhores produtos para o seu negócio com condições especiais de pagamento
-          </p>
-        </header>
+    <main className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Marketplace B2B</h1>
+            <p className="text-gray-600">Produtos em atacado para seu negócio</p>
+          </div>
+          <button
+            onClick={() => setIsCartOpen(true)}
+            className="relative bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors"
+          >
+            Carrinho ({cartItemCount})
+            {cartItemCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
+                {cartItemCount}
+              </span>
+            )}
+          </button>
+        </div>
 
         <CategoryFilter
           categories={categories}
@@ -192,32 +191,22 @@ export const B2BMarketplace: React.FC = () => {
           onCategoryChange={setSelectedCategory}
         />
 
-        <section aria-label="Lista de produtos">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredProducts.map((product) => (
-              <ProductCard 
-                key={product.id} 
-                product={product} 
-                onBuyNow={handleBuyNow}
-                onAddToCart={handleAddToCart}
-              />
-            ))}
-          </div>
-        </section>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredProducts.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              onBuyNow={handleBuyNow}
+              onAddToCart={handleAddToCart}
+            />
+          ))}
+        </div>
 
-        {cart.length > 0 && (
-          <div 
-            className="fixed bottom-4 right-4 bg-black text-white px-4 py-2 rounded-lg shadow-lg cursor-pointer hover:bg-gray-800 transition-colors"
-            onClick={() => setIsCartOpen(true)}
-          >
-            Itens no carrinho: {cart.length}
-          </div>
-        )}
-        
         <CartDrawer
           isOpen={isCartOpen}
           onClose={() => setIsCartOpen(false)}
-          items={cart}
+          items={cartItems}
+          total={cartTotal}
           onUpdateQuantity={handleUpdateQuantity}
           onRemoveItem={handleRemoveItem}
         />
@@ -225,233 +214,3 @@ export const B2BMarketplace: React.FC = () => {
     </main>
   );
 };
-
-=======
-
-import React, { useState } from 'react';
-import { ProductCard } from './ProductCard';
-import { CategoryFilter } from './CategoryFilter';
-import { CartDrawer } from './CartDrawer';
-
-interface Product {
-  id: string;
-  name: string;
-  category: string;
-  price: number;
-  unit: string;
-  minOrder: number;
-  image: string;
-  paymentTerms: {
-    cash: number;
-    days30: number;
-    days60: number;
-    days90: number;
-  };
-}
-
-const mockProducts: Product[] = [
-  {
-    id: '1',
-    name: 'Óleo de Soja Refinado - Galão 20L',
-    category: 'Alimentos',
-    price: 85.90,
-    unit: 'un',
-    minOrder: 5,
-    image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400&h=400&fit=crop',
-    paymentTerms: {
-      cash: 85.90,
-      days30: 89.20,
-      days60: 92.50,
-      days90: 95.80
-    }
-  },
-  {
-    id: '2',
-    name: 'Refrigerante Cola 2L - Caixa 12un',
-    category: 'Bebidas',
-    price: 48.50,
-    unit: 'cx',
-    minOrder: 2,
-    image: 'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?w=400&h=400&fit=crop',
-    paymentTerms: {
-      cash: 48.50,
-      days30: 50.45,
-      days60: 52.40,
-      days90: 54.35
-    }
-  },
-  {
-    id: '3',
-    name: 'Embalagem Plástica Transparente 500ml - Pacote 100un',
-    category: 'Embalagens',
-    price: 32.90,
-    unit: 'pct',
-    minOrder: 10,
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=400&fit=crop',
-    paymentTerms: {
-      cash: 32.90,
-      days30: 34.20,
-      days60: 35.50,
-      days90: 36.80
-    }
-  },
-  {
-    id: '4',
-    name: 'Farinha de Trigo Especial - Saco 25kg',
-    category: 'Alimentos',
-    price: 45.80,
-    unit: 'sc',
-    minOrder: 3,
-    image: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400&h=400&fit=crop',
-    paymentTerms: {
-      cash: 45.80,
-      days30: 47.60,
-      days60: 49.40,
-      days90: 51.20
-    }
-  },
-  {
-    id: '5',
-    name: 'Suco Natural Laranja 1L - Caixa 12un',
-    category: 'Bebidas',
-    price: 65.90,
-    unit: 'cx',
-    minOrder: 2,
-    image: 'https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=400&h=400&fit=crop',
-    paymentTerms: {
-      cash: 65.90,
-      days30: 68.50,
-      days60: 71.10,
-      days90: 73.70
-    }
-  },
-  {
-    id: '6',
-    name: 'Caixas de Papelão 30x30x20cm - Pacote 50un',
-    category: 'Embalagens',
-    price: 85.00,
-    unit: 'pct',
-    minOrder: 5,
-    image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400&h=400&fit=crop',
-    paymentTerms: {
-      cash: 85.00,
-      days30: 88.40,
-      days60: 91.80,
-      days90: 95.20
-    }
-  }
-];
-
-const categories = ['Alimentos', 'Bebidas', 'Embalagens'];
-
-interface CartItem {
-  id: string;
-  name: string;
-  image: string;
-  price: number;
-  unit: string;
-  quantity: number;
-  total: number;
-}
-
-export const B2BMarketplace: React.FC = () => {
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-
-  const filteredProducts = selectedCategory === 'all' 
-    ? mockProducts 
-    : mockProducts.filter(product => product.category === selectedCategory);
-
-  const handleAddToCart = (product: Product, quantity: number) => {
-    const existingItemIndex = cart.findIndex(item => item.id === product.id);
-    
-    if (existingItemIndex >= 0) {
-      const updatedCart = [...cart];
-      updatedCart[existingItemIndex].quantity += quantity;
-      updatedCart[existingItemIndex].total = updatedCart[existingItemIndex].quantity * product.paymentTerms.cash;
-      setCart(updatedCart);
-    } else {
-      const newItem: CartItem = {
-        id: product.id,
-        name: product.name,
-        image: product.image,
-        price: product.paymentTerms.cash,
-        unit: product.unit,
-        quantity,
-        total: quantity * product.paymentTerms.cash
-      };
-      setCart(prev => [...prev, newItem]);
-    }
-    
-    setIsCartOpen(true);
-  };
-
-  const handleBuyNow = (product: Product) => {
-    console.log('Comprar agora:', product.name);
-    // Aqui você implementaria a lógica para compra imediata
-  };
-
-  const handleUpdateQuantity = (id: string, quantity: number) => {
-    setCart(prev => prev.map(item => 
-      item.id === id 
-        ? { ...item, quantity, total: quantity * item.price }
-        : item
-    ));
-  };
-
-  const handleRemoveItem = (id: string) => {
-    setCart(prev => prev.filter(item => item.id !== id));
-  };
-
-  return (
-    <main id="main-content" className="bg-muted/30 py-12 px-4 lg:px-24 md:px-10">
-      <div className="mx-auto max-w-7xl">
-        <header className="mb-8 text-center">
-          <h1 className="mb-4 text-3xl font-bold text-foreground">Marketplace B2B</h1>
-          <p className="mx-auto max-w-2xl text-muted-foreground">
-            Encontre os melhores produtos para o seu negócio com condições especiais de pagamento
-          </p>
-        </header>
-
-        <CategoryFilter
-          categories={categories}
-          selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
-        />
-
-        <section aria-label="Lista de produtos">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredProducts.map((product) => (
-              <ProductCard 
-                key={product.id} 
-                product={product} 
-                onBuyNow={handleBuyNow}
-                onAddToCart={handleAddToCart}
-              />
-            ))}
-          </div>
-        </section>
-
-        {cart.length > 0 && (
-          <div 
-            className="fixed bottom-4 right-4 bg-black text-white px-4 py-2 rounded-lg shadow-lg cursor-pointer hover:bg-gray-800 transition-colors"
-            onClick={() => setIsCartOpen(true)}
-          >
-            Itens no carrinho: {cart.length}
-          </div>
-        )}
-        
-        <CartDrawer
-          isOpen={isCartOpen}
-          onClose={() => setIsCartOpen(false)}
-          items={cart}
-          onUpdateQuantity={handleUpdateQuantity}
-          onRemoveItem={handleRemoveItem}
-        />
-      </div>
-    </main>
-  );
-};
-
->>>>>>> origin/test
