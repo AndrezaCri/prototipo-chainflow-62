@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, ShoppingCart, User, Menu } from 'lucide-react';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export const Header: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -54,6 +55,11 @@ export const Header: React.FC = () => {
       </form>
       
       <div className="flex items-center gap-4">
+        {/* Botão de Conectar Carteira */}
+        <div className="hidden sm:block">
+          <ConnectButton />
+        </div>
+        
         <button className="rounded-full p-2 text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Carrinho de compras">
           <ShoppingCart className="h-5 w-5" />
         </button>
@@ -79,6 +85,12 @@ export const Header: React.FC = () => {
             <a href="#" className="text-base font-normal text-black">New Arrivals</a>
             <a href="#" className="text-base font-normal text-black">Brands</a>
             <Link to="/defi-investor" className="text-base font-normal text-black">DeFi Investor</Link>
+            
+            {/* Botão de Conectar Carteira no menu móvel */}
+            <div className="mt-4">
+              <ConnectButton />
+            </div>
+            
             <form onSubmit={handleSearch} className="relative mt-4">
               <span className="absolute -translate-y-2/4 text-xl text-[#666666] left-4 top-2/4">🔍</span>
               <input
