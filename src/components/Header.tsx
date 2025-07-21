@@ -2,10 +2,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, ShoppingCart, User, Menu } from 'lucide-react';
-<<<<<<< HEAD
-=======
-import { ConnectButton } from '@rainbow-me/rainbowkit';
->>>>>>> origin/test
 
 export const Header: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,22 +23,6 @@ export const Header: React.FC = () => {
         </div>
       
       <nav className="flex items-center gap-6 max-md:hidden">
-<<<<<<< HEAD
-       {/*div className="flex items-center cursor-pointer hover:opacity-70 transition-opacity">
-          <span className="text-base font-normal text-black">Shop</span>
-          <span className="text-sm text-black ml-1">▼</span>
-        </div>
-       <a href="#" className="text-base font-normal text-black cursor-pointer hover:opacity-70 transition-opacity">
-          On Sale
-        </a>
-        <a href="#" className="text-base font-normal text-black cursor-pointer hover:opacity-70 transition-opacity">
-          New Arrivals
-        </a>
-        <a href="#" className="text-base font-normal text-black cursor-pointer hover:opacity-70 transition-opacity">
-          Brands
-        </a>*/}
-=======
->>>>>>> origin/test
         <Link to="/defi-investor" className="text-base font-normal text-black cursor-pointer hover:opacity-70 transition-opacity">
           DeFi Investors
         </Link>
@@ -61,10 +41,6 @@ export const Header: React.FC = () => {
       </form>
       
       <div className="flex items-center gap-4">
-<<<<<<< HEAD
-=======
-        <ConnectButton />
->>>>>>> origin/test
         <button className="rounded-full p-2 text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Carrinho de compras">
           <ShoppingCart className="h-5 w-5" />
         </button>
@@ -107,8 +83,3 @@ export const Header: React.FC = () => {
     </>
   );
 };
-<<<<<<< HEAD
-=======
-
-
->>>>>>> origin/test
