@@ -20,8 +20,3 @@ export default defineConfig(({ mode }) => ({
     },
   },
 }));
-<<<<<<< HEAD
-=======
-
-
->>>>>>> origin/test

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -144,3 +145,4 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onBuyNow, onA
     </>
   );
 };
+

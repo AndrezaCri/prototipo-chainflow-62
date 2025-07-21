@@ -23,6 +23,19 @@ export const Header: React.FC = () => {
         </div>
       
       <nav className="flex items-center gap-6 max-md:hidden">
+       {/*div className="flex items-center cursor-pointer hover:opacity-70 transition-opacity">
+          <span className="text-base font-normal text-black">Shop</span>
+          <span className="text-sm text-black ml-1">▼</span>
+        </div>
+       <a href="#" className="text-base font-normal text-black cursor-pointer hover:opacity-70 transition-opacity">
+          On Sale
+        </a>
+        <a href="#" className="text-base font-normal text-black cursor-pointer hover:opacity-70 transition-opacity">
+          New Arrivals
+        </a>
+        <a href="#" className="text-base font-normal text-black cursor-pointer hover:opacity-70 transition-opacity">
+          Brands
+        </a>*/}
         <Link to="/defi-investor" className="text-base font-normal text-black cursor-pointer hover:opacity-70 transition-opacity">
           DeFi Investors
         </Link>
