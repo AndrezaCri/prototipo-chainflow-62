@@ -2,6 +2,8 @@ import React from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Trash2, Plus, Minus } from 'lucide-react';
+<<<<<<< HEAD
+=======
 import { useSendTransaction, usePrepareSendTransaction, useContractWrite, usePrepareContractWrite } from 'wagmi';
 import { parseUnits } from 'ethers';
 import { useAccount } from 'wagmi';
@@ -10,6 +12,7 @@ import { useAccount } from 'wagmi';
 const ERC20_ABI = [
   "function transfer(address to, uint256 amount) returns (bool)"
 ];
+>>>>>>> origin/test
 
 interface CartItem {
   id: string;
@@ -29,6 +32,16 @@ interface CartDrawerProps {
   onRemoveItem: (id: string) => void;
 }
 
+<<<<<<< HEAD
+export const CartDrawer: React.FC<CartDrawerProps> = ({ 
+  isOpen, 
+  onClose, 
+  items, 
+  onUpdateQuantity, 
+  onRemoveItem 
+}) => {
+  const totalValue = items.reduce((sum, item) => sum + item.total, 0);
+=======
 export const CartDrawer: React.FC<CartDrawerProps> = ({
   isOpen,
   onClose,
@@ -79,6 +92,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
     // Em um cenário real, você precisaria de uma função `approve` e `transferFrom`.
     transferUSDC?.();
   };
+>>>>>>> origin/test
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
@@ -86,7 +100,11 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
         <SheetHeader>
           <SheetTitle>Carrinho de Compras</SheetTitle>
         </SheetHeader>
+<<<<<<< HEAD
+        
+=======
 
+>>>>>>> origin/test
         <div className="flex flex-col h-full">
           <div className="flex-1 overflow-auto py-4">
             {items.length === 0 ? (
@@ -97,18 +115,31 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <div className="space-y-4">
                 {items.map((item) => (
                   <div key={item.id} className="flex items-center space-x-4 p-4 border rounded-lg">
+<<<<<<< HEAD
+                    <img 
+                      src={item.image} 
+                      alt={item.name}
+                      className="w-16 h-16 object-cover rounded"
+                    />
+                    
+=======
                     <img
                       src={item.image}
                       alt={item.name}
                       className="w-16 h-16 object-cover rounded"
                     />
 
+>>>>>>> origin/test
                     <div className="flex-1 space-y-2">
                       <h4 className="font-medium text-sm">{item.name}</h4>
                       <p className="text-sm text-muted-foreground">
                         R$ {item.price.toFixed(2)}/{item.unit}
                       </p>
+<<<<<<< HEAD
+                      
+=======
 
+>>>>>>> origin/test
                       <div className="flex items-center space-x-2">
                         <Button
                           variant="outline"
@@ -136,7 +167,11 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
+<<<<<<< HEAD
+                      
+=======
 
+>>>>>>> origin/test
                       <div className="text-sm font-semibold">
                         Total: R$ {item.total.toFixed(2)}
                       </div>
@@ -146,11 +181,23 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               </div>
             )}
           </div>
+<<<<<<< HEAD
+          
+=======
 
+>>>>>>> origin/test
           {items.length > 0 && (
             <div className="border-t pt-4 space-y-4">
               <div className="flex justify-between items-center text-lg font-semibold">
                 <span>Total Geral:</span>
+<<<<<<< HEAD
+                <span>R$ {totalValue.toFixed(2)}</span>
+              </div>
+              
+              <div className="space-y-2">
+                <Button className="w-full" size="lg">
+                  Finalizar Pedido
+=======
                 <span>R$ {totalValueBRL.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center text-lg font-semibold">
@@ -161,6 +208,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <div className="space-y-2">
                 <Button className="w-full" size="lg" onClick={handleCheckoutWithUSDC}>
                   Pagar com USDC (Base)
+>>>>>>> origin/test
                 </Button>
                 <Button variant="outline" className="w-full" onClick={onClose}>
                   Continuar Comprando
@@ -172,5 +220,9 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
       </SheetContent>
     </Sheet>
   );
+<<<<<<< HEAD
+};
+=======
 };
 
+>>>>>>> origin/test
