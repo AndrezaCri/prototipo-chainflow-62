@@ -60,9 +60,9 @@ export const Header: React.FC = () => {
           <ConnectButton />
         </div>
         
-        <button className="rounded-full p-2 text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Carrinho de compras">
+        <Link to="/cart" className="rounded-full p-2 text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Carrinho de compras">
           <ShoppingCart className="h-5 w-5" />
-        </button>
+        </Link>
       </div>
       
       <button 
