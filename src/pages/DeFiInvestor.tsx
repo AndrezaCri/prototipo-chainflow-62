@@ -1,9 +1,10 @@
 
 import React from 'react';
-import { WalletConnection } from '@/components/WalletConnection';
 import { PortfolioDashboard } from '@/components/PortfolioDashboard';
 import { LiquidityPools } from '@/components/LiquidityPools';
+import { WalletDetection } from '@/components/WalletDetection';
 import { Link } from 'react-router-dom';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 const DeFiInvestor = () => {
   return (
@@ -31,7 +32,7 @@ const DeFiInvestor = () => {
             </a>
           </nav>
 
-          <WalletConnection />
+          <ConnectButton />
         </header>
 
         {/* Hero Section */}
@@ -87,15 +88,17 @@ const DeFiInvestor = () => {
 
         {/* Main Content */}
         <main className="px-[100px] py-12 max-md:px-10 max-sm:px-5">
-          {/* Portfolio Section */}
-          <div className="mb-16" id="portfolio">
-            <PortfolioDashboard />
-          </div>
+          <WalletDetection>
+            {/* Portfolio Section */}
+            <div className="mb-16" id="portfolio">
+              <PortfolioDashboard />
+            </div>
 
-          {/* Liquidity Pools Section */}
-          <div id="pools">
-            <LiquidityPools />
-          </div>
+            {/* Liquidity Pools Section */}
+            <div id="pools">
+              <LiquidityPools />
+            </div>
+          </WalletDetection>
         </main>
       </div>
     </>

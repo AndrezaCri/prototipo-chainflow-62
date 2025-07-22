@@ -1,6 +1,8 @@
 
 import React, { useState } from 'react';
 import { TokenSwap } from './TokenSwap';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { parseUnits } from 'viem';
 
 interface Pool {
   id: string;
@@ -13,8 +15,35 @@ interface Pool {
   category: string;
 }
 
+// Endereço do contrato USDC na Base (mainnet)
+const USDC_CONTRACT_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
+// Endereço do contrato PaymentReceiver (substitua pelo endereço real após implantação)
+const PAYMENT_RECEIVER_ADDRESS = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512';
+
+// ABI simplificado do USDC (ERC-20)
+const USDC_ABI = [
+  {
+    name: 'transfer',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'to', type: 'address' },
+      { name: 'amount', type: 'uint256' }
+    ],
+    outputs: [{ name: '', type: 'bool' }]
+  }
+] as const;
+
 export const LiquidityPools: React.FC = () => {
   const [selectedPool, setSelectedPool] = useState<string | null>(null);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  
+  // Web3 hooks
+  const { isConnected } = useAccount();
+  const { writeContract, data: hash, isPending } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+    hash,
+  });
 
   const handleSwap = (amount: number, from: string, to: string) => {
     console.log('Swapping', amount, 'from', from, 'to', to);
@@ -54,11 +83,41 @@ export const LiquidityPools: React.FC = () => {
     }
   ];
 
-  const handleFinance = (poolId: string) => {
+  const handleFinance = async (poolId: string) => {
+    if (!isConnected) {
+      alert('Por favor, conecte sua carteira primeiro');
+      return;
+    }
+
+    const pool = pools.find(p => p.id === poolId);
+    if (!pool) return;
+
+    // Valor mínimo de investimento (exemplo: $1000 USDC)
+    const minimumInvestment = 1000;
+    const usdcAmount = minimumInvestment;
+    
     setSelectedPool(poolId);
-    console.log('Financing pool:', poolId);
-    // Reset after 2 seconds to simulate transaction
-    setTimeout(() => setSelectedPool(null), 2000);
+    setIsProcessingPayment(true);
+
+    try {
+      // Converter para wei (USDC tem 6 decimais)
+      const amountInWei = parseUnits(usdcAmount.toString(), 6);
+      
+      // Executar transação USDC
+      await writeContract({
+        address: USDC_CONTRACT_ADDRESS,
+        abi: USDC_ABI,
+        functionName: 'transfer',
+        args: [PAYMENT_RECEIVER_ADDRESS, amountInWei],
+      });
+      
+    } catch (error) {
+      console.error('Erro no investimento DeFi:', error);
+      alert('Erro ao processar investimento. Verifique se você tem USDC suficiente.');
+      setSelectedPool(null);
+    } finally {
+      setIsProcessingPayment(false);
+    }
   };
 
   const getRiskBadgeStyle = (risk: string) => {
@@ -149,13 +208,33 @@ export const LiquidityPools: React.FC = () => {
             </div>*/}
 
             {/* Action Button */}
-            <button
-              onClick={() => handleFinance(pool.id)}
-              className="w-full bg-black text-white text-base font-medium px-[54px] py-4 rounded-[62px] hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black/50 transition-all duration-300 disabled:bg-[#666666] disabled:cursor-not-allowed"
-              disabled={selectedPool === pool.id}
-            >
-              {selectedPool === pool.id ? 'Processing...' : 'Finance Now'}
-            </button>
+            <div className="space-y-3">
+              {!isConnected ? (
+                <div className="text-sm text-gray-600 text-center p-3 bg-gray-50 rounded-lg">
+                  Conecte sua carteira para investir com USDC
+                </div>
+              ) : (
+                <div className="text-sm text-gray-600 text-center">
+                  Investimento mínimo: $1,000 USDC
+                </div>
+              )}
+              
+              <button
+                onClick={() => handleFinance(pool.id)}
+                className="w-full bg-black text-white text-base font-medium px-[54px] py-4 rounded-[62px] hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black/50 transition-all duration-300 disabled:bg-[#666666] disabled:cursor-not-allowed"
+                disabled={!isConnected || selectedPool === pool.id || isProcessingPayment || isPending || isConfirming}
+              >
+                {isProcessingPayment || isPending ? (
+                  'Processando Pagamento...'
+                ) : isConfirming ? (
+                  'Confirmando Transação...'
+                ) : isConfirmed ? (
+                  'Investimento Realizado!'
+                ) : (
+                  'Finance Now'
+                )}
+              </button>
+            </div>
 
             {/* Additional Info */}
             <div className="text-xs text-[#666666] mt-4 text-center">
