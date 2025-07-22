@@ -39,10 +39,10 @@ const DeFiInvestor = () => {
         <section className="bg-[#f2f0f1] pt-[103px] pb-[116px] px-[100px] max-md:px-10 max-md:py-[60px] max-sm:px-5 max-sm:py-10">
           <div className="max-w-[800px]">
             <h1 className="text-[64px] font-bold leading-[64px] text-black mb-8 max-md:text-5xl max-md:leading-[52px] max-sm:text-4xl max-sm:leading-10 max-sm:mb-5">
-              FINANCE B2B RECEIVABLES
+              FINANCE B2B BUSINESS
             </h1>
             <p className="text-base font-normal leading-[22px] text-[#666666] mb-8 max-sm:text-sm max-sm:leading-5 max-sm:mb-6">
-              Invest in tokenized restaurant receivables and earn competitive yields while supporting food industry growth through our secure DeFi platform.
+              Finance small businesses and earn competitive yields on a secure DeFi platform.
             </p>
             
             <div className="flex gap-8 max-md:justify-center max-md:flex-wrap max-md:gap-6 max-sm:flex-col max-sm:gap-4">
