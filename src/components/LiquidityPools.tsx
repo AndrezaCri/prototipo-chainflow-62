@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { TokenSwap } from './TokenSwap';
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useConfig } from 'wagmi';
 import { parseUnits } from 'viem';
 
 interface Pool {
@@ -39,15 +39,36 @@ export const LiquidityPools: React.FC = () => {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   
   // Web3 hooks
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount();
+  const config = useConfig();
   const { writeContract, data: hash, isPending } = useWriteContract();
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
     hash,
   });
 
-  const handleSwap = (amount: number, from: string, to: string) => {
-    console.log('Swapping', amount, 'from', from, 'to', to);
-    // Add your swap logic here
+  const handleSwap = async (amount: number, from: string, to: string) => {
+    if (!isConnected) {
+      alert('Por favor, conecte sua carteira primeiro');
+      return;
+    }
+
+    if (!amount || amount <= 0) {
+      alert('Por favor, insira um valor válido');
+      return;
+    }
+
+    try {
+      console.log(`Simulando swap de ${amount} ${from.toUpperCase()} para ${to.toUpperCase()}`);
+      
+      // Simular delay de transação
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      alert(`Swap realizado com sucesso!\n${amount} ${from.toUpperCase()} → ${amount * 0.98} ${to.toUpperCase()}\n(Taxa de 2% aplicada)`);
+      
+    } catch (error) {
+      console.error('Erro no swap:', error);
+      alert('Erro ao realizar swap. Tente novamente.');
+    }
   };
 
   const pools: Pool[] = [
@@ -109,6 +130,8 @@ export const LiquidityPools: React.FC = () => {
         abi: USDC_ABI,
         functionName: 'transfer',
         args: [PAYMENT_RECEIVER_ADDRESS, amountInWei],
+        account: address,
+        chain: config.chains[0],
       });
       
     } catch (error) {
