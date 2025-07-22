@@ -148,3 +148,23 @@ All colors MUST be HSL.
     }
   }
 }
+
+/* RainbowKit customizations */
+[data-rk] .iekbcc0 {
+  background-color: hsl(var(--logo-color)) !important;
+  border-color: hsl(var(--logo-color)) !important;
+}
+
+[data-rk] .iekbcc0:hover {
+  background-color: hsl(var(--logo-color) / 0.9) !important;
+}
+
+/* Custom styles for Connect button */
+button[data-testid="rk-connect-button"] {
+  background-color: hsl(var(--logo-color)) !important;
+  border-color: hsl(var(--logo-color)) !important;
+}
+
+button[data-testid="rk-connect-button"]:hover {
+  background-color: hsl(var(--logo-color) / 0.9) !important;
+}
