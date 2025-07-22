@@ -11,6 +11,17 @@ export const TokenSwap: React.FC<TokenSwapProps> = ({ onSwap }) => {
   const [toToken, setToToken] = React.useState('usdc');
   const { isConnected } = useAccount();
 
+  const handleSwitch = () => {
+    console.log('Switch clicado - antes:', { fromToken, toToken });
+    const newFromToken = fromToken === 'brz' ? 'usdc' : 'brz';
+    const newToToken = toToken === 'usdc' ? 'brz' : 'usdc';
+    
+    setFromToken(newFromToken);
+    setToToken(newToToken);
+    
+    console.log('Switch clicado - depois:', { fromToken: newFromToken, toToken: newToToken });
+  };
+
   const handleSwap = () => {
     if (!isConnected) {
       alert('Por favor, conecte sua carteira primeiro');
@@ -27,10 +38,7 @@ export const TokenSwap: React.FC<TokenSwapProps> = ({ onSwap }) => {
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold text-black">SWAP USDC/BRZ </h3>
         <button 
-          onClick={() => {
-            setFromToken(fromToken === 'brz' ? 'usdc' : 'brz');
-            setToToken(toToken === 'usdc' ? 'brz' : 'usdc');
-          }}
+          onClick={handleSwitch}
           className="text-[#00C851] hover:text-[#00A841] transition-colors"
         >
           Switch
