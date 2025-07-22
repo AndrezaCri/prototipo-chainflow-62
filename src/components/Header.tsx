@@ -63,9 +63,6 @@ export const Header: React.FC = () => {
         <button className="rounded-full p-2 text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Carrinho de compras">
           <ShoppingCart className="h-5 w-5" />
         </button>
-        <button className="rounded-full p-2 text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Conta do usuário">
-          <User className="h-5 w-5" />
-        </button>
       </div>
       
       <button 
