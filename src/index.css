@@ -168,3 +168,12 @@ button[data-testid="rk-connect-button"] {
 button[data-testid="rk-connect-button"]:hover {
   background-color: hsl(var(--logo-color) / 0.9) !important;
 }
+
+/* RainbowKit modal background */
+[data-rk] [role="dialog"] {
+  background-color: white !important;
+}
+
+[data-rk] .ju367v9 {
+  background-color: white !important;
+}
