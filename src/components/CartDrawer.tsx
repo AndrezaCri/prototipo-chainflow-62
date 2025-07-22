@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Trash2, Plus, Minus, Wallet, CreditCard } from 'lucide-react';
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useConfig } from 'wagmi';
 import { parseUnits, formatUnits } from 'viem';
 
 interface CartItem {
@@ -53,6 +53,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   
   const { address, isConnected } = useAccount();
+  const config = useConfig();
   const { writeContract, data: hash, error, isPending } = useWriteContract();
   
   const { isLoading: isConfirming, isSuccess: isConfirmed } = 
@@ -81,6 +82,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
         abi: USDC_ABI,
         functionName: 'transfer',
         args: [PAYMENT_RECEIVER_ADDRESS, amountInWei],
+        account: address,
+        chain: config.chains[0],
       });
       
     } catch (error) {
