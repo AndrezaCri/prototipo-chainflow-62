@@ -19,8 +19,13 @@ export const Header: React.FC = () => {
       <header className="bg-background px-4 py-6 border-b border-border lg:px-24 md:px-10" role="banner">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex flex-col md:flex-row md:items-center md:gap-6">
-            <div className="text-2xl font-bold lg:text-3xl" style={{ color: 'hsl(var(--logo-color))' }}>
-              ChainFlow
+            <div className="flex items-center justify-between md:justify-start">
+              <div className="scale-90 md:scale-100 md:order-2">
+                <ConnectButton />
+              </div>
+              <div className="text-2xl font-bold lg:text-3xl md:order-1" style={{ color: 'hsl(var(--logo-color))' }}>
+                ChainFlow
+              </div>
             </div>
             <nav className="mt-2 md:mt-0">
               <Link to="/defi-investor" className="text-base font-normal text-foreground cursor-pointer hover:text-primary transition-colors">
@@ -40,13 +45,6 @@ export const Header: React.FC = () => {
               aria-label="Buscar produtos"
             />
           </form>
-          
-          <div className="flex items-center gap-4 justify-end">
-            {/* Botão de Conectar Carteira menor */}
-            <div className="scale-75 md:scale-100">
-              <ConnectButton />
-            </div>
-          </div>
         </div>
       </header>
     </>
