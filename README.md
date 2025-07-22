@@ -1,3 +1,19 @@
+
+## 🏢 Marketplace B2B Integrado
+
+Explore e adquira produtos com condições comerciais exclusivas diretamente pela blockchain.
+
+Interface Visual Intuitiva: Navegue pelos produtos com imagens e descrições claras.
+
+Filtro por Categoria: Filtre por Alimentos, Bebidas, Embalagens ou visualize todos.
+
+Exibição de Produtos: Cards com visual moderno exibem cada item com imagem, nome e possível ação de compra.
+
+Transações Seguras via Blockchain: Cada compra pode ser protegida por contratos inteligentes e escrow descentralizado.
+
+KYC/AML: Verificação de identidade para transações comerciais seguras.
+
+
 # ChainFlow - DeFi Investment Platform
 
 Uma plataforma moderna de investimentos DeFi que permite aos usuários gerenciar portfolios, participar de pools de liquidez e realizar transações de tokens de forma segura e intuitiva.
@@ -51,32 +67,6 @@ Uma plataforma moderna de investimentos DeFi que permite aos usuários gerenciar
 - **Build Tool**: Vite
 - **Componentes**: Radix UI primitives
 
-## 📦 Instalação
-
-1. Clone o repositório:
-```bash
-git clone <YOUR_GIT_URL>
-cd <YOUR_PROJECT_NAME>
-```
-
-2. Instale as dependências:
-```bash
-npm install
-```
-
-3. Inicie o servidor de desenvolvimento:
-```bash
-npm run dev
-```
-
-4. Acesse a aplicação em `http://localhost:5173`
-
-## 🔧 Scripts Disponíveis
-
-- `npm run dev` - Inicia o servidor de desenvolvimento
-- `npm run build` - Gera a build de produção
-- `npm run preview` - Visualiza a build de produção localmente
-- `npm run lint` - Executa o linter
 
 ## 🎯 Estrutura do Projeto
 
@@ -144,84 +134,11 @@ A aplicação foi desenvolvida com mobile-first:
 - **Quick Actions**: Acesso rápido às funções principais
 - **Offline Mode**: Visualização de dados em cache quando offline
 
-## 🚀 Deploy
-
-### Via Lovable
-Simplesmente abra [Lovable](https://lovable.dev/projects/f151160a-400c-4b27-b47d-850bb1b421ac) e clique em Share -> Publish.
-
-### Deploy Manual
-A aplicação pode ser facilmente deployed em plataformas como:
-- Vercel
-- Netlify
-- GitHub Pages
-
-Para fazer o deploy:
-```bash
-npm run build
-```
-
-## 🔗 Domínio Customizado
-
-Sim, você pode conectar um domínio customizado!
-
-Para conectar um domínio, navegue até Project > Settings > Domains e clique em Connect Domain.
-
-Leia mais aqui: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
-
-## 💻 Como Editar o Código
-
-### Use Lovable
-Simplesmente visite o [Lovable Project](https://lovable.dev/projects/f151160a-400c-4b27-b47d-850bb1b421ac) e comece a fazer prompts.
-
-Mudanças feitas via Lovable serão commitadas automaticamente neste repo.
-
-### Use seu IDE preferido
-Se você quer trabalhar localmente usando seu próprio IDE, pode clonar este repo e fazer push das mudanças. Mudanças enviadas também serão refletidas no Lovable.
-
-O único requisito é ter Node.js & npm instalados - [instalar com nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Siga estes passos:
-
-```sh
-# Passo 1: Clone o repositório usando a URL Git do projeto.
-git clone <YOUR_GIT_URL>
-
-# Passo 2: Navegue para o diretório do projeto.
-cd <YOUR_PROJECT_NAME>
-
-# Passo 3: Instale as dependências necessárias.
-npm i
-
-# Passo 4: Inicie o servidor de desenvolvimento com auto-reload e preview instantâneo.
-npm run dev
-```
-
-### Edite um arquivo diretamente no GitHub
-- Navegue para o arquivo desejado.
-- Clique no botão "Edit" (ícone de lápis) no topo direito da visualização do arquivo.
-- Faça suas mudanças e commite as mudanças.
-
-### Use GitHub Codespaces
-- Navegue para a página principal do seu repositório.
-- Clique no botão "Code" (botão verde) próximo ao topo direito.
-- Selecione a aba "Codespaces".
-- Clique em "New codespace" para lançar um novo ambiente Codespace.
-- Edite arquivos diretamente dentro do Codespace e commite e faça push das suas mudanças quando terminar.
-
-## 🤝 Contribuição
-
-1. Faça um fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
-3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
-4. Push para a branch (`git push origin feature/nova-feature`)
-5. Abra um Pull Request
-
 ## 📄 Licença
 
 Este projeto está sob a licença MIT.
 
 ---
 
-**URL do Projeto**: https://lovable.dev/projects/f151160a-400c-4b27-b47d-850bb1b421ac
+**URL do Projeto**:https://chainflow.lovable.app/
 
-Desenvolvido com ❤️ usando Lovable
