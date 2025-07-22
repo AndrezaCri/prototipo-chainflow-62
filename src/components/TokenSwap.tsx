@@ -1,4 +1,5 @@
 import React from 'react';
+import { useAccount } from 'wagmi';
 
 interface TokenSwapProps {
   onSwap: (amount: number, from: string, to: string) => void;
@@ -8,8 +9,14 @@ export const TokenSwap: React.FC<TokenSwapProps> = ({ onSwap }) => {
   const [amount, setAmount] = React.useState('');
   const [fromToken, setFromToken] = React.useState('brz');
   const [toToken, setToToken] = React.useState('usdc');
+  const { isConnected } = useAccount();
 
   const handleSwap = () => {
+    if (!isConnected) {
+      alert('Por favor, conecte sua carteira primeiro');
+      return;
+    }
+    
     if (amount && !isNaN(Number(amount))) {
       onSwap(Number(amount), fromToken, toToken);
     }
@@ -62,13 +69,21 @@ export const TokenSwap: React.FC<TokenSwapProps> = ({ onSwap }) => {
         </div>
       </div>
 
-      <button
-        onClick={handleSwap}
-        className="w-full mt-6 py-3 bg-[#00C851] text-white rounded-[10px] hover:bg-[#00A841] transition-colors"
-        disabled={!amount || isNaN(Number(amount))}
-      >
-        Swap
-      </button>
+      <div className="space-y-3">
+        {!isConnected && (
+          <div className="text-sm text-gray-600 text-center p-3 bg-gray-50 rounded-lg">
+            Conecte sua carteira para fazer swap
+          </div>
+        )}
+        
+        <button
+          onClick={handleSwap}
+          className="w-full py-3 bg-[#00C851] text-white rounded-[10px] hover:bg-[#00A841] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+          disabled={!isConnected || !amount || isNaN(Number(amount))}
+        >
+          Swap
+        </button>
+      </div>
     </div>
   );
 };
