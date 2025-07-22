@@ -20,11 +20,11 @@ export const Header: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex flex-col md:flex-row md:items-center md:gap-6">
             <div className="flex items-center justify-between md:justify-start">
-              <div className="scale-90 md:scale-100 md:order-2">
-                <ConnectButton />
-              </div>
               <div className="text-2xl font-bold lg:text-3xl md:order-1" style={{ color: 'hsl(var(--logo-color))' }}>
                 ChainFlow
+              </div>
+              <div className="scale-90 md:scale-100 md:order-2">
+                <ConnectButton />
               </div>
             </div>
             <nav className="mt-2 md:mt-0">
