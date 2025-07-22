@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, ShoppingCart, User, Menu } from 'lucide-react';
+import { Search, User, Menu } from 'lucide-react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export const Header: React.FC = () => {
@@ -60,9 +60,6 @@ export const Header: React.FC = () => {
           <ConnectButton />
         </div>
         
-        <Link to="/cart" className="rounded-full p-2 text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Carrinho de compras">
-          <ShoppingCart className="h-5 w-5" />
-        </Link>
       </div>
       
       <button 
@@ -77,11 +74,9 @@ export const Header: React.FC = () => {
       {isMobileMenuOpen && (
         <div className="absolute top-full left-0 right-0 bg-white border-t border-[#f0f0f0] p-4 md:hidden z-50">
           <nav className="flex flex-col gap-4">
-            <a href="#" className="text-base font-normal text-black">Shop</a>
-            <a href="#" className="text-base font-normal text-black">On Sale</a>
-            <a href="#" className="text-base font-normal text-black">New Arrivals</a>
-            <a href="#" className="text-base font-normal text-black">Brands</a>
-            <Link to="/defi-investor" className="text-base font-normal text-black">DeFi Investor</Link>
+            <Link to="/" className="text-base font-normal text-foreground hover:text-primary transition-colors">Início</Link>
+            <Link to="/defi-investor" className="text-base font-normal text-foreground hover:text-primary transition-colors">DeFi Investor</Link>
+            <Link to="/cart" className="text-base font-normal text-foreground hover:text-primary transition-colors">Carrinho</Link>
             
             {/* Botão de Conectar Carteira no menu móvel */}
             <div className="mt-4">
