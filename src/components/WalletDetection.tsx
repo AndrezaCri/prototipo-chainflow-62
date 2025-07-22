@@ -1,27 +1,21 @@
 import React, { useEffect, useState } from 'react';
-
 interface WalletDetectionProps {
   children: React.ReactNode;
 }
-
-export const WalletDetection: React.FC<WalletDetectionProps> = ({ children }) => {
+export const WalletDetection: React.FC<WalletDetectionProps> = ({
+  children
+}) => {
   const [walletStatus, setWalletStatus] = useState({
     hasMetaMask: false,
     hasCoinbase: false,
     hasAnyWallet: false,
     isChecking: true
   });
-
   useEffect(() => {
     const checkWallets = () => {
-      const hasMetaMask = typeof window.ethereum !== 'undefined' && 
-                          (window.ethereum.isMetaMask || window.ethereum.providers?.some((p: any) => p.isMetaMask));
-      
-      const hasCoinbase = typeof window.ethereum !== 'undefined' && 
-                          (window.ethereum.isCoinbaseWallet || window.ethereum.providers?.some((p: any) => p.isCoinbaseWallet));
-      
+      const hasMetaMask = typeof window.ethereum !== 'undefined' && (window.ethereum.isMetaMask || window.ethereum.providers?.some((p: any) => p.isMetaMask));
+      const hasCoinbase = typeof window.ethereum !== 'undefined' && (window.ethereum.isCoinbaseWallet || window.ethereum.providers?.some((p: any) => p.isCoinbaseWallet));
       const hasAnyWallet = typeof window.ethereum !== 'undefined';
-
       setWalletStatus({
         hasMetaMask,
         hasCoinbase,
@@ -47,24 +41,18 @@ export const WalletDetection: React.FC<WalletDetectionProps> = ({ children }) =>
 
     // Escutar eventos de carregamento de extensões
     window.addEventListener('ethereum#initialized', checkWallets);
-    
     return () => {
       clearTimeout(timer);
       window.removeEventListener('ethereum#initialized', checkWallets);
     };
   }, []);
-
   if (walletStatus.isChecking) {
-    return (
-      <div className="flex items-center justify-center p-4">
+    return <div className="flex items-center justify-center p-4">
         <div className="text-sm text-gray-600">Verificando carteiras instaladas...</div>
-      </div>
-    );
+      </div>;
   }
-
   if (!walletStatus.hasAnyWallet) {
-    return (
-      <div>
+    return <div>
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
           <div className="flex items-start space-x-3">
             <div className="text-yellow-600">⚠️</div>
@@ -76,21 +64,11 @@ export const WalletDetection: React.FC<WalletDetectionProps> = ({ children }) =>
                 Para usar as funcionalidades DeFi, você precisa instalar uma carteira Web3:
               </p>
               <div className="space-y-2">
-                <a 
-                  href="https://metamask.io/download/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
-                >
+                <a href="https://metamask.io/download/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800">
                   📦 Instalar MetaMask
                 </a>
                 <br />
-                <a 
-                  href="https://www.coinbase.com/wallet" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
-                >
+                <a href="https://www.coinbase.com/wallet" target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800">
                   📦 Instalar Coinbase Wallet
                 </a>
               </div>
@@ -98,24 +76,10 @@ export const WalletDetection: React.FC<WalletDetectionProps> = ({ children }) =>
           </div>
         </div>
         {children}
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div>
-      {walletStatus.hasAnyWallet && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
-          <div className="flex items-center space-x-2">
-            <div className="text-green-600">✅</div>
-            <div className="text-sm text-green-800">
-              Carteira detectada! Você pode conectar e usar as funcionalidades DeFi.
-            </div>
-          </div>
-        </div>
-      )}
+  return <div>
+      {walletStatus.hasAnyWallet}
       {children}
-    </div>
-  );
+    </div>;
 };
-
