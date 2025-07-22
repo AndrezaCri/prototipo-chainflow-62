@@ -1,0 +1,84 @@
+/* Customização das cores do RainbowKit para #c1e428 */
+
+/* Botão Connect Wallet principal */
+[data-rk] button[data-testid="rk-connect-button"] {
+  background-color: #c1e428 !important;
+  color: #000000 !important;
+  border: none !important;
+  font-weight: 600 !important;
+}
+
+[data-rk] button[data-testid="rk-connect-button"]:hover {
+  background-color: #a8c523 !important;
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+/* Botão quando conectado (mostra endereço) */
+[data-rk] button[data-testid="rk-account-button"] {
+  background-color: #c1e428 !important;
+  color: #000000 !important;
+  border: none !important;
+  font-weight: 600 !important;
+}
+
+[data-rk] button[data-testid="rk-account-button"]:hover {
+  background-color: #a8c523 !important;
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+/* Customização do modal de carteiras */
+[data-rk] [data-testid="rk-wallet-option"] {
+  border: 2px solid transparent !important;
+}
+
+[data-rk] [data-testid="rk-wallet-option"]:hover {
+  border-color: #c1e428 !important;
+  background-color: rgba(193, 228, 40, 0.1) !important;
+}
+
+/* Botões dentro do modal */
+[data-rk] button[data-testid="rk-wallet-option-button"] {
+  border: 2px solid transparent !important;
+}
+
+[data-rk] button[data-testid="rk-wallet-option-button"]:hover {
+  border-color: #c1e428 !important;
+  background-color: rgba(193, 228, 40, 0.1) !important;
+}
+
+/* Botão "Get a Wallet" */
+[data-rk] button:contains("Get a Wallet") {
+  background-color: #c1e428 !important;
+  color: #000000 !important;
+  border: none !important;
+}
+
+/* Botão "Learn More" */
+[data-rk] button:contains("Learn More") {
+  color: #c1e428 !important;
+  border-color: #c1e428 !important;
+}
+
+/* Indicador de conexão */
+[data-rk] [data-testid="rk-account-button-loading"] {
+  background-color: #c1e428 !important;
+}
+
+/* Customização adicional para garantir consistência */
+[data-rk] .iekbcc0 {
+  background-color: #c1e428 !important;
+  color: #000000 !important;
+}
+
+[data-rk] .iekbcc0:hover {
+  background-color: #a8c523 !important;
+}
+
+/* Estilo para botões desabilitados */
+[data-rk] button:disabled {
+  background-color: #e0e0e0 !important;
+  color: #999999 !important;
+}
+
