@@ -16,7 +16,7 @@ const DeFiInvestor = () => {
       <div className="max-w-[1440px] w-full bg-white mx-auto my-0 max-md:max-w-[991px] max-sm:max-w-screen-sm font-['Inter']">
         {/* Header matching main page */}
         <header className="flex items-center justify-between bg-white px-[100px] py-6 border-b-[#f0f0f0] border-b border-solid max-md:px-10 max-md:py-5 max-sm:px-5 max-sm:py-4">
-          <Link to="/" className="text-[32px] font-bold text-black max-sm:text-2xl hover:opacity-70 transition-opacity">
+          <Link to="/" className="text-[32px] font-bold max-sm:text-2xl hover:opacity-70 transition-opacity" style={{ color: '#c1e428' }}>
             ChainFlow <span className="text-[#666666]">DeFi</span>
           </Link>
           

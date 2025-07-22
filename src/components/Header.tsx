@@ -19,7 +19,7 @@ export const Header: React.FC = () => {
         Pular para o conteúdo principal
       </a>
       <header className="flex items-center justify-between bg-background px-4 py-6 border-b border-border lg:px-24 md:px-10" role="banner">
-        <div className="text-2xl font-bold text-foreground lg:text-3xl">
+        <div className="text-2xl font-bold lg:text-3xl" style={{ color: '#c1e428' }}>
           ChainFlow
         </div>
       
