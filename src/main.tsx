@@ -41,7 +41,6 @@ const config = getDefaultConfig({
   appName: 'ChainFlow',
   projectId: '81f33bfdc2779abb1b9295edb1c591e3',
   chains: [base, baseSepolia],
-  connectors,
   ssr: false,
 })
 

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { TokenSwap } from './TokenSwap';
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useConfig } from 'wagmi';
 import { parseUnits } from 'viem';
 
 interface Pool {
@@ -39,7 +39,8 @@ export const LiquidityPools: React.FC = () => {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   
   // Web3 hooks
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount();
+  const config = useConfig();
   const { writeContract, data: hash, isPending } = useWriteContract();
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
     hash,
@@ -129,6 +130,8 @@ export const LiquidityPools: React.FC = () => {
         abi: USDC_ABI,
         functionName: 'transfer',
         args: [PAYMENT_RECEIVER_ADDRESS, amountInWei],
+        account: address,
+        chain: config.chains[0],
       });
       
     } catch (error) {
