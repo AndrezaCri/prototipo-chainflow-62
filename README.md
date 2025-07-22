@@ -1,73 +1,172 @@
-# Welcome to your Lovable project
+# ChainFlow - DeFi Investment Platform
 
-## Project info
+Uma plataforma moderna de investimentos DeFi que permite aos usuários gerenciar portfolios, participar de pools de liquidez e realizar transações de tokens de forma segura e intuitiva.
 
-**URL**: https://lovable.dev/projects/f151160a-400c-4b27-b47d-850bb1b421ac
+## 🚀 Funcionalidades
 
-## How can I edit this code?
+- **Portfolio Dashboard**: Visualize e gerencie seus investimentos DeFi
+- **Pools de Liquidez**: Participe de pools de liquidez com diferentes APYs
+- **Token Swap**: Troque tokens de forma segura
+- **Conexão de Carteira**: Integração com carteiras Web3 via RainbowKit
+- **Marketplace B2B**: Plataforma para transações comerciais
+- **Design Responsivo**: Interface otimizada para dispositivos móveis e desktop
 
-There are several ways of editing your application.
+## 🛠️ Tecnologias
 
-**Use Lovable**
+- **Frontend**: React 18 + TypeScript
+- **Styling**: Tailwind CSS + Shadcn/ui
+- **Blockchain**: Wagmi + Viem para interação Web3
+- **Carteiras**: RainbowKit para conexão de carteiras
+- **Roteamento**: React Router DOM
+- **Gráficos**: Recharts para visualização de dados
+- **Build Tool**: Vite
+- **Componentes**: Radix UI primitives
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/f151160a-400c-4b27-b47d-850bb1b421ac) and start prompting.
+## 📦 Instalação
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+1. Clone o repositório:
+```bash
 git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
 cd <YOUR_PROJECT_NAME>
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
+2. Instale as dependências:
+```bash
+npm install
+```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+3. Inicie o servidor de desenvolvimento:
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+4. Acesse a aplicação em `http://localhost:5173`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🔧 Scripts Disponíveis
 
-**Use GitHub Codespaces**
+- `npm run dev` - Inicia o servidor de desenvolvimento
+- `npm run build` - Gera a build de produção
+- `npm run preview` - Visualiza a build de produção localmente
+- `npm run lint` - Executa o linter
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🎯 Estrutura do Projeto
 
-## What technologies are used for this project?
+```
+src/
+├── components/          # Componentes reutilizáveis
+│   ├── ui/             # Componentes de UI (Shadcn)
+│   ├── Header.tsx      # Cabeçalho da aplicação
+│   ├── HeroSection.tsx # Seção hero
+│   └── ...
+├── pages/              # Páginas da aplicação
+│   ├── Index.tsx       # Página inicial
+│   ├── DeFiInvestor.tsx# Página do investidor DeFi
+│   └── Cart.tsx        # Página do carrinho
+├── hooks/              # Hooks customizados
+├── lib/                # Utilitários e configurações
+└── main.tsx           # Ponto de entrada da aplicação
+```
 
-This project is built with:
+## 🌐 Funcionalidades Web3
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Conexão de Carteira**: Suporte para MetaMask, WalletConnect e outras carteiras
+- **Multi-chain**: Preparado para múltiplas redes blockchain
+- **Token Swaps**: Interface intuitiva para troca de tokens
+- **Pools de Liquidez**: Visualização e participação em pools DeFi
 
-## How can I deploy this project?
+## 📱 Responsividade
 
-Simply open [Lovable](https://lovable.dev/projects/f151160a-400c-4b27-b47d-850bb1b421ac) and click on Share -> Publish.
+A aplicação foi desenvolvida com foco em experiência móvel:
+- Layout adaptativo para diferentes tamanhos de tela
+- Navegação otimizada para dispositivos móveis
+- Componentes touch-friendly
 
-## Can I connect a custom domain to my Lovable project?
+## 🎨 Design System
 
-Yes, you can!
+O projeto utiliza um sistema de design consistente baseado em:
+- Tokens de cor semânticos definidos em CSS variables
+- Componentes Shadcn/ui customizados
+- Animações e transições suaves
+- Modo escuro/claro
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 🚀 Deploy
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+### Via Lovable
+Simplesmente abra [Lovable](https://lovable.dev/projects/f151160a-400c-4b27-b47d-850bb1b421ac) e clique em Share -> Publish.
+
+### Deploy Manual
+A aplicação pode ser facilmente deployed em plataformas como:
+- Vercel
+- Netlify
+- GitHub Pages
+
+Para fazer o deploy:
+```bash
+npm run build
+```
+
+## 🔗 Domínio Customizado
+
+Sim, você pode conectar um domínio customizado!
+
+Para conectar um domínio, navegue até Project > Settings > Domains e clique em Connect Domain.
+
+Leia mais aqui: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## 💻 Como Editar o Código
+
+### Use Lovable
+Simplesmente visite o [Lovable Project](https://lovable.dev/projects/f151160a-400c-4b27-b47d-850bb1b421ac) e comece a fazer prompts.
+
+Mudanças feitas via Lovable serão commitadas automaticamente neste repo.
+
+### Use seu IDE preferido
+Se você quer trabalhar localmente usando seu próprio IDE, pode clonar este repo e fazer push das mudanças. Mudanças enviadas também serão refletidas no Lovable.
+
+O único requisito é ter Node.js & npm instalados - [instalar com nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+
+Siga estes passos:
+
+```sh
+# Passo 1: Clone o repositório usando a URL Git do projeto.
+git clone <YOUR_GIT_URL>
+
+# Passo 2: Navegue para o diretório do projeto.
+cd <YOUR_PROJECT_NAME>
+
+# Passo 3: Instale as dependências necessárias.
+npm i
+
+# Passo 4: Inicie o servidor de desenvolvimento com auto-reload e preview instantâneo.
+npm run dev
+```
+
+### Edite um arquivo diretamente no GitHub
+- Navegue para o arquivo desejado.
+- Clique no botão "Edit" (ícone de lápis) no topo direito da visualização do arquivo.
+- Faça suas mudanças e commite as mudanças.
+
+### Use GitHub Codespaces
+- Navegue para a página principal do seu repositório.
+- Clique no botão "Code" (botão verde) próximo ao topo direito.
+- Selecione a aba "Codespaces".
+- Clique em "New codespace" para lançar um novo ambiente Codespace.
+- Edite arquivos diretamente dentro do Codespace e commite e faça push das suas mudanças quando terminar.
+
+## 🤝 Contribuição
+
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
+3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
+4. Push para a branch (`git push origin feature/nova-feature`)
+5. Abra um Pull Request
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT.
+
+---
+
+**URL do Projeto**: https://lovable.dev/projects/f151160a-400c-4b27-b47d-850bb1b421ac
+
+Desenvolvido com ❤️ usando Lovable
