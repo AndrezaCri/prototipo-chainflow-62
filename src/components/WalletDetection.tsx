@@ -64,37 +64,40 @@ export const WalletDetection: React.FC<WalletDetectionProps> = ({ children }) =>
 
   if (!walletStatus.hasAnyWallet) {
     return (
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-        <div className="flex items-start space-x-3">
-          <div className="text-yellow-600">⚠️</div>
-          <div>
-            <h3 className="text-sm font-medium text-yellow-800 mb-2">
-              Nenhuma carteira detectada
-            </h3>
-            <p className="text-sm text-yellow-700 mb-3">
-              Para usar as funcionalidades DeFi, você precisa instalar uma carteira Web3:
-            </p>
-            <div className="space-y-2">
-              <a 
-                href="https://metamask.io/download/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
-              >
-                📦 Instalar MetaMask
-              </a>
-              <br />
-              <a 
-                href="https://www.coinbase.com/wallet" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
-              >
-                📦 Instalar Coinbase Wallet
-              </a>
+      <div>
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+          <div className="flex items-start space-x-3">
+            <div className="text-yellow-600">⚠️</div>
+            <div>
+              <h3 className="text-sm font-medium text-yellow-800 mb-2">
+                Nenhuma carteira detectada
+              </h3>
+              <p className="text-sm text-yellow-700 mb-3">
+                Para usar as funcionalidades DeFi, você precisa instalar uma carteira Web3:
+              </p>
+              <div className="space-y-2">
+                <a 
+                  href="https://metamask.io/download/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
+                >
+                  📦 Instalar MetaMask
+                </a>
+                <br />
+                <a 
+                  href="https://www.coinbase.com/wallet" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
+                >
+                  📦 Instalar Coinbase Wallet
+                </a>
+              </div>
             </div>
           </div>
         </div>
+        {children}
       </div>
     );
   }
