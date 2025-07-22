@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { WalletConnection } from '@/components/WalletConnection';
 import { PortfolioDashboard } from '@/components/PortfolioDashboard';
 import { LiquidityPools } from '@/components/LiquidityPools';
 import { Link } from 'react-router-dom';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 const DeFiInvestor = () => {
   return (
@@ -31,7 +31,7 @@ const DeFiInvestor = () => {
             </a>
           </nav>
 
-          <WalletConnection />
+          <ConnectButton />
         </header>
 
         {/* Hero Section */}
