@@ -141,7 +141,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onBuyNow, onA
               className="w-full bg-[#c1e428] hover:bg-[#a8c523] text-black font-semibold"
               onClick={handleOpenPayment}
             >
-              Comprar via ChainFlow
+              Comprar
             </Button>
             <p className="text-xs text-gray-500 text-center">
               Pagamento à vista ou financiado pela ChainFlow
