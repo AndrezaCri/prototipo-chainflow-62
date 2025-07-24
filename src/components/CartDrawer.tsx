@@ -95,7 +95,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   };
 
   const handleTraditionalPayment = () => {
-    // Confirmar pagamento convencional sem redirecionamento
+    // Simular redirecionamento para gateway de pagamento
     const paymentData = {
       amount: totalValue,
       currency: 'BRL',
@@ -103,16 +103,19 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
       timestamp: new Date().toISOString()
     };
     
-    // Mostrar confirmação de pagamento
+    // Em produção, isso seria um redirecionamento real para um gateway como PagSeguro, Mercado Pago, etc.
+    const paymentUrl = `https://checkout.exemplo.com/pay?amount=${totalValue}&currency=BRL&reference=${Date.now()}`;
+    
+    // Mostrar modal de confirmação antes do redirecionamento
     const confirmPayment = confirm(
-      `Confirmar pagamento convencional?\n\nValor: R$ ${totalValue.toFixed(2)}\n\nDeseja continuar?`
+      `Você será redirecionado para o pagamento tradicional.\n\nValor: R$ ${totalValue.toFixed(2)}\n\nDeseja continuar?`
     );
     
     if (confirmPayment) {
-      // Processar pagamento localmente sem redirecionamento
-      alert(`Pagamento confirmado!\n\nValor: R$ ${totalValue.toFixed(2)}\nMétodo: Pagamento Convencional`);
+      // Simular redirecionamento (em produção seria window.location.href = paymentUrl)
+      alert(`Redirecionando para: ${paymentUrl}\n\n(Em produção, isso abriria o gateway de pagamento)`);
       
-      // Limpar carrinho após confirmação
+      // Limpar carrinho após redirecionamento
       items.forEach(item => onRemoveItem(item.id));
       onClose();
     }
