@@ -49,7 +49,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   onUpdateQuantity, 
   onRemoveItem 
 }) => {
-  const [paymentMethod, setPaymentMethod] = useState<'traditional' | 'usdc'>('traditional');
+  const [paymentMethod, setPaymentMethod] = useState<'usdc'>('usdc');
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   
   const { address, isConnected } = useAccount();
@@ -204,21 +204,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <div className="space-y-3">
                 <h4 className="font-medium">Método de Pagamento:</h4>
                 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 gap-2">
                   <Button
-                    variant={paymentMethod === 'traditional' ? 'default' : 'outline'}
+                    variant="default"
                     size="sm"
-                    onClick={() => setPaymentMethod('traditional')}
-                    className="flex items-center gap-2"
-                  >
-                    <CreditCard className="h-4 w-4" />
-                    Tradicional
-                  </Button>
-                  
-                  <Button
-                    variant={paymentMethod === 'usdc' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setPaymentMethod('usdc')}
                     className="flex items-center gap-2"
                   >
                     <Wallet className="h-4 w-4" />
@@ -229,51 +218,39 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               
               {/* Botões de pagamento */}
               <div className="space-y-2">
-                {paymentMethod === 'usdc' ? (
-                  <>
-                    {!isConnected ? (
-                      <div className="text-sm text-muted-foreground text-center p-2 bg-muted rounded">
-                        Conecte sua carteira para pagar com USDC
-                      </div>
-                    ) : (
-                      <Button 
-                        className="w-full" 
-                        size="lg"
-                        onClick={handleUSDCPayment}
-                        disabled={isProcessingPayment || isPending || isConfirming}
-                      >
-                        {isProcessingPayment || isPending ? (
-                          'Processando...'
-                        ) : isConfirming ? (
-                          'Confirmando...'
-                        ) : isConfirmed ? (
-                          'Pagamento Confirmado!'
-                        ) : (
-                          `Pagar ${usdcAmount.toFixed(6)} USDC`
-                        )}
-                      </Button>
-                    )}
-                    
-                    {error && (
-                      <div className="text-sm text-red-600 text-center p-2 bg-red-50 rounded">
-                        Erro: {error.message}
-                      </div>
-                    )}
-                    
-                    {isConfirmed && (
-                      <div className="text-sm text-green-600 text-center p-2 bg-green-50 rounded">
-                        Pagamento realizado com sucesso!
-                      </div>
-                    )}
-                  </>
+                {!isConnected ? (
+                  <div className="text-sm text-muted-foreground text-center p-2 bg-muted rounded">
+                    Conecte sua carteira para pagar com USDC
+                  </div>
                 ) : (
                   <Button 
                     className="w-full" 
                     size="lg"
-                    onClick={handleTraditionalPayment}
+                    onClick={handleUSDCPayment}
+                    disabled={isProcessingPayment || isPending || isConfirming}
                   >
-                    Finalizar Pedido
+                    {isProcessingPayment || isPending ? (
+                      'Processando...'
+                    ) : isConfirming ? (
+                      'Confirmando...'
+                    ) : isConfirmed ? (
+                      'Pagamento Confirmado!'
+                    ) : (
+                      `Pagar ${usdcAmount.toFixed(6)} USDC`
+                    )}
                   </Button>
+                )}
+                
+                {error && (
+                  <div className="text-sm text-red-600 text-center p-2 bg-red-50 rounded">
+                    Erro: {error.message}
+                  </div>
+                )}
+                
+                {isConfirmed && (
+                  <div className="text-sm text-green-600 text-center p-2 bg-green-50 rounded">
+                    Pagamento realizado com sucesso!
+                  </div>
                 )}
                 
                 <Button variant="outline" className="w-full" onClick={onClose}>
