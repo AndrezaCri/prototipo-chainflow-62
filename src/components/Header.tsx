@@ -40,6 +40,9 @@ export const Header: React.FC = () => {
         <Link to="/defi-investor" className="text-base font-normal text-black cursor-pointer hover:opacity-70 transition-opacity">
           DeFi Investors
         </Link>
+        <Link to="/credit-hub" className="text-base font-normal text-black cursor-pointer hover:opacity-70 transition-opacity">
+          Credit Hub
+        </Link>
       </nav>
       
       <form onSubmit={handleSearch} className="relative hidden w-96 sm:block lg:w-[500px]" role="search">
@@ -85,6 +88,7 @@ export const Header: React.FC = () => {
             <a href="#" className="text-base font-normal text-black">New Arrivals</a>
             <a href="#" className="text-base font-normal text-black">Brands</a>
             <Link to="/defi-investor" className="text-base font-normal text-black">DeFi Investor</Link>
+            <Link to="/credit-hub" className="text-base font-normal text-black">Credit Hub</Link>
             
             {/* Botão de Conectar Carteira no menu móvel */}
             <div className="mt-4">
