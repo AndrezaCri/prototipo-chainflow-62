@@ -175,7 +175,9 @@ const CreditHub = () => {
         </section>
 
         {/* Wallet Detection */}
-        <WalletDetection />
+        <WalletDetection>
+          <div></div>
+        </WalletDetection>
 
         {/* Main Content Tabs */}
         <section className="py-12 bg-gray-50">
