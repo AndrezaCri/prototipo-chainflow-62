@@ -281,10 +281,10 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
                 <div className="flex-1">
                   <Label htmlFor="cash" className="font-medium text-blue-600 flex items-center gap-2">
                     <Zap className="h-4 w-4" />
-                    Pagamento Convencional - {formatCurrency(getPaymentAmount('cash'))}
+                    À vista - {formatCurrency(getPaymentAmount('cash'))}
                   </Label>
                   <p className="text-sm text-blue-600">
-                    Pagamento tradicional
+                    Pagamento imediato
                   </p>
                 </div>
                 <CheckCircle className="h-5 w-5 text-blue-500" />
