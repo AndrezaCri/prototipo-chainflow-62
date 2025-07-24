@@ -275,20 +275,6 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
             </div>
             
             <RadioGroup value={paymentMethod} onValueChange={handlePaymentMethodChange}>
-              {/* À vista */}
-              <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
-                <RadioGroupItem value="cash" id="cash" />
-                <div className="flex-1">
-                  <Label htmlFor="cash" className="font-medium text-blue-600 flex items-center gap-2">
-                    <Zap className="h-4 w-4" />
-                    Pagamento Convencional - {formatCurrency(getPaymentAmount('cash'))}
-                  </Label>
-                  <p className="text-sm text-blue-600">
-                    À vista
-                  </p>
-                </div>
-                <CheckCircle className="h-5 w-5 text-blue-500" />
-              </div>
 
               {/* 30 dias */}
               <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
