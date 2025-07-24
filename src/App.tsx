@@ -6,7 +6,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import DeFiInvestor from "./pages/DeFiInvestor";
-import CreditHub from "./pages/CreditHub";
 import Cart from "./pages/Cart";
 import NotFound from "./pages/NotFound";
 
@@ -21,7 +20,6 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/defi-investor" element={<DeFiInvestor />} />
-          <Route path="/credit-hub" element={<CreditHub />} />
           <Route path="/cart" element={<Cart />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
