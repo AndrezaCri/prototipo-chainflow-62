@@ -38,6 +38,11 @@ export const LiquidityPools: React.FC = () => {
   const [selectedPool, setSelectedPool] = useState<string | null>(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [investmentAmounts, setInvestmentAmounts] = useState<{[key: string]: string}>({});
+  const [totalSupplied, setTotalSupplied] = useState<{[key: string]: string}>({
+    'pool1': '50000',
+    'pool2': '75000', 
+    'pool3': '100000'
+  });
   
   // Web3 hooks
   const { isConnected, address } = useAccount();
@@ -200,8 +205,20 @@ export const LiquidityPools: React.FC = () => {
             <div className="grid grid-cols-2 gap-6 mb-6">
               <div>
                 <div className="text-sm font-normal text-[#666666] mb-1">Total Supplied</div>
-                <div className="text-2xl font-bold text-black">
-                  ${pool.amount.toLocaleString()}
+                <div className="relative">
+                  <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">$</span>
+                  <input
+                    type="number"
+                    min="10000"
+                    step="1000"
+                    value={totalSupplied[pool.id] || ''}
+                    onChange={(e) => setTotalSupplied(prev => ({
+                      ...prev,
+                      [pool.id]: e.target.value
+                    }))}
+                    className="w-full pl-6 pr-2 py-1 text-2xl font-bold text-black border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/20 focus:border-transparent bg-transparent"
+                    placeholder="50000"
+                  />
                 </div>
               </div>
               <div>
