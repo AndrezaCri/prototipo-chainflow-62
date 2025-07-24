@@ -38,7 +38,6 @@ interface PaymentData {
   paymentMethod: 'cash' | 'days30' | 'days60' | 'days90';
   totalAmount: number;
   creditApproved?: boolean;
-  pixCode?: string;
   dueDate?: string;
   applicationId?: string;
 }
@@ -168,13 +167,13 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
         paymentMethod,
         totalAmount, // Preço cheio para o comprador
         creditApproved: true,
-        pixCode: `PIX-CASH-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        
       };
 
       onPaymentComplete(paymentData);
       toast({
         title: "Pagamento à vista confirmado",
-        description: `Valor total: ${formatCurrency(totalAmount)}. Realize o pagamento via PIX.`,
+        description: `Valor total: ${formatCurrency(totalAmount)}.`,
       });
     } else {
       // Pagamento a prazo via ChainFlow Credit
@@ -282,10 +281,10 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
                 <div className="flex-1">
                   <Label htmlFor="cash" className="font-medium text-blue-600 flex items-center gap-2">
                     <Zap className="h-4 w-4" />
-                    À vista (PIX) - {formatCurrency(getPaymentAmount('cash'))}
+                    À vista - {formatCurrency(getPaymentAmount('cash'))}
                   </Label>
                   <p className="text-sm text-blue-600">
-                    Pagamento imediato via PIX
+                    Pagamento imediato
                   </p>
                 </div>
                 <CheckCircle className="h-5 w-5 text-blue-500" />
@@ -344,7 +343,7 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
                   <div>
                     <p className="text-sm font-medium text-blue-800">Como funciona o ChainFlow Credit:</p>
                     <ul className="text-sm text-blue-700 mt-1 space-y-1">
-                      <li>• O fornecedor recebe à vista via PIX</li>
+                      <li>• O fornecedor recebe o pagamento</li>
                       <li>• Você paga para ChainFlow na data de vencimento</li>
                       <li>• Análise de crédito automática com IA</li>
                       <li>• Liquidez garantida pelos Credit Pools DeFi</li>
@@ -484,7 +483,7 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
                 <div className="flex justify-between">
                   <span>Método:</span>
                   <span className="font-medium">
-                    {paymentMethod === 'cash' ? 'À vista (PIX)' : 
+                    {paymentMethod === 'cash' ? 'À vista' : 
                      `${paymentMethod.replace('days', '')} dias`}
                   </span>
                 </div>
