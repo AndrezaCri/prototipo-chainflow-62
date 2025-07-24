@@ -42,11 +42,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onBuyNow, onA
     console.log('Payment completed:', paymentData);
     
     if (paymentData.paymentMethod === 'cash') {
-      // Pagamento à vista
+      // Pagamento convencional - apenas confirmar sem processar PIX
       toast({
-        title: "Pagamento à vista confirmado",
+        title: "Pagamento convencional confirmado",
         description: `Pedido confirmado para finalização.`,
       });
+      
+      // Adicionar ao carrinho sem processar pagamentos PIX
+      onAddToCart(product, quantity);
     } else {
       // Pagamento a prazo - ChainFlow Credit
       if (paymentData.creditApproved && paymentData.applicationId) {
@@ -87,10 +90,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onBuyNow, onA
           });
         }
       }
+      
+      // Adicionar ao carrinho
+      onAddToCart(product, quantity);
     }
-    
-    // Adicionar ao carrinho ou processar compra
-    onAddToCart(product, quantity);
   };
 
   // Preços corretos: compradores pagam preço cheio, fornecedores dão 5% para ChainFlow
