@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Menu } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export const Header: React.FC = () => {
@@ -32,13 +32,12 @@ export const Header: React.FC = () => {
         </nav>
       
         <form onSubmit={handleSearch} className="relative hidden w-96 sm:block lg:w-[500px]" role="search">
-          <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
           <input
             type="search"
             placeholder="Buscar produtos..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-full bg-muted py-3 pl-12 pr-4 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="w-full rounded-full bg-muted py-3 px-4 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Buscar produtos"
           />
         </form>
