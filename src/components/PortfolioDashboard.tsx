@@ -17,9 +17,9 @@ export const PortfolioDashboard: React.FC = () => {
   };
 
   const positions = [
-    { pool: 'Lending Pool 30D', amount: 25000, maturity: '2024-02-15', yield: 9.2 },
-    { pool: 'Lending Pool 60D', amount: 18000, maturity: '2024-02-28', yield: 8.7 },
-    { pool: 'Lending Pool 90D', amount: 32000, maturity: '2024-03-10', yield: 7.8 },
+    { pool: 'Credit Pool 30D', amount: 25000, maturity: '2024-02-15', yield: 9.2 },
+    { pool: 'Credit Pool 60D', amount: 18000, maturity: '2024-02-28', yield: 8.7 },
+    { pool: 'Credit Pool 90D', amount: 32000, maturity: '2024-03-10', yield: 7.8 },
   ];
 
   return (
