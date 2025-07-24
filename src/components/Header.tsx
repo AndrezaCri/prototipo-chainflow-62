@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, ShoppingCart, User, Menu } from 'lucide-react';
+import { Search, Menu } from 'lucide-react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export const Header: React.FC = () => {
@@ -48,13 +48,6 @@ export const Header: React.FC = () => {
           <div className="hidden sm:block">
             <ConnectButton />
           </div>
-        
-          <Link to="/cart" className="rounded-full p-2 text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Carrinho de compras">
-            <ShoppingCart className="h-5 w-5" />
-          </Link>
-          <button className="rounded-full p-2 text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Conta do usuário">
-            <User className="h-5 w-5" />
-          </button>
         </div>
       
         <button 
@@ -71,7 +64,6 @@ export const Header: React.FC = () => {
             <nav className="flex flex-col gap-4">
               <Link to="/defi-investor" className="text-base font-normal text-black">DeFi Investors</Link>
               <Link to="/credit-hub" className="text-base font-normal text-black">Credit Hub</Link>
-              <Link to="/cart" className="text-base font-normal text-black">Carrinho</Link>
             
               {/* Botão de Conectar Carteira no menu móvel */}
               <div className="mt-4">
