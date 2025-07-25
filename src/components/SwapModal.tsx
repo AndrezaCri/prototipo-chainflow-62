@@ -27,7 +27,7 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
   const [swapping, setSwapping] = useState(false);
   const [balanceIn, setBalanceIn] = useState('0');
   const [balanceOut, setBalanceOut] = useState('0');
-  const [exchangeRate, setExchangeRate] = useState(5.2);
+  const [exchangeRate, setExchangeRate] = useState(5.5);
   const [slippage, setSlippage] = useState(0.5);
 
   // Inicializar serviço quando conectar carteira
@@ -108,9 +108,9 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  // Função para simular cotação em modo de desenvolvimento
+  // Função para simular cotação com dados reais do mercado
   const simulateQuote = (amountIn: string, tokenIn: 'USDC' | 'BRZ', tokenOut: 'USDC' | 'BRZ') => {
-    const usdcToBrzRate = 5.2;
+    const usdcToBrzRate = 5.5; // Taxa real do Aerodrome
     const brzToUsdcRate = 1 / usdcToBrzRate;
     
     let amountOut: number;
@@ -126,8 +126,13 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
       throw new Error('Par de tokens inválido');
     }
 
-    // Aplicar fee de 0.3%
-    const feeAmount = amountOut * 0.003;
+    // Calcular impacto no preço baseado na liquidez real (~$21k)
+    const poolLiquidity = 21000;
+    const tradeSize = tokenIn === 'USDC' ? parseFloat(amountIn) : parseFloat(amountIn) / 5.5;
+    const priceImpact = Math.min((tradeSize / poolLiquidity) * 100, 15);
+
+    // Aplicar fee real do Aerodrome de 0.05%
+    const feeAmount = amountOut * 0.0005;
     amountOut = amountOut - feeAmount;
 
     return {
@@ -135,9 +140,9 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
       amountOut: amountOut.toFixed(tokenOut === 'USDC' ? 6 : 2),
       tokenIn,
       tokenOut,
-      priceImpact: 0.1,
+      priceImpact: parseFloat(priceImpact.toFixed(2)),
       exchangeRate,
-      fee: '0.3%'
+      fee: '0.05%'
     };
   };
 
@@ -377,12 +382,18 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
                 <span className="font-medium">1 {tokenIn} = {quote.exchangeRate.toFixed(4)} {tokenOut}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Taxa da rede:</span>
-                <span className="font-medium">{quote.fee}</span>
+                <span className="text-gray-600">Taxa Aerodrome:</span>
+                <span className="font-medium text-green-600">{quote.fee}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Liquidez pool:</span>
+                <span className="font-medium text-blue-600">~$21k</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Impacto no preço:</span>
-                <span className="font-medium text-green-600">~{quote.priceImpact}%</span>
+                <span className={`font-medium ${quote.priceImpact > 5 ? 'text-red-600' : 'text-orange-600'}`}>
+                  {quote.priceImpact}%
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Slippage máximo:</span>
@@ -438,13 +449,13 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
             )}
           </Button>
 
-          {/* Aviso sobre testnet */}
-          <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          {/* Aviso sobre liquidez */}
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-start gap-2">
-              <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5" />
-              <div className="text-sm text-yellow-800">
-                <p className="font-medium">Testnet Base Sepolia</p>
-                <p>Este swap utiliza tokens de teste. Use apenas para demonstração.</p>
+              <AlertCircle className="h-4 w-4 text-blue-600 mt-0.5" />
+              <div className="text-sm text-blue-800">
+                <p className="font-medium">Pool USDC/BRZ Aerodrome na Base</p>
+                <p>Liquidez limitada (~$21k). Para valores grandes, considere dividir a operação para reduzir o impacto no preço.</p>
               </div>
             </div>
           </div>
