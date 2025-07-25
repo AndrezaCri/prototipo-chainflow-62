@@ -1,5 +1,5 @@
 // Google OAuth Configuration
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'your-google-client-id';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '281508231912-39ssbnvq23k7e73dbpct62rjttj1tksg.apps.googleusercontent.com';
 const GOOGLE_REDIRECT_URI = import.meta.env.VITE_GOOGLE_REDIRECT_URI || 'http://localhost:8080/auth/google/callback';
 
 export interface GoogleUser {

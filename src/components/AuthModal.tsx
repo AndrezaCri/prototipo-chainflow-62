@@ -47,8 +47,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     
     try {
       // Verificar se há client ID configurado
-      const hasClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID && 
-                          import.meta.env.VITE_GOOGLE_CLIENT_ID !== 'your-google-client-id';
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '281508231912-39ssbnvq23k7e73dbpct62rjttj1tksg.apps.googleusercontent.com';
+      const hasClientId = clientId !== 'your-google-client-id';
       
       if (hasClientId) {
         // Login real com Google OAuth
