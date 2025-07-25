@@ -28,8 +28,8 @@ export const CreditPools: React.FC<CreditPoolsProps> = ({ onInvest }) => {
 
   const handleInvest = async (poolId: string) => {
     const pool = creditPools.find(p => p.id.toString() === poolId);
-    if (!pool || investmentAmount < pool.minInvestment) {
-      alert('Valor mínimo de investimento não atingido');
+    if (!pool || investmentAmount < 100) {
+      alert('Valor mínimo de investimento é R$ 100');
       return;
     }
 
@@ -38,10 +38,12 @@ export const CreditPools: React.FC<CreditPoolsProps> = ({ onInvest }) => {
       return;
     }
 
-    // Verificar se tem BRZ suficiente
+    // Para investir R$ 500, precisa ter 50 BRZ (razão 10:1)
+    const requiredBrz = investmentAmount / 10;
     const brzBalanceValue = brzBalance ? Number(brzBalance.formatted) : 0;
-    if (brzBalanceValue < investmentAmount) {
-      alert(`Saldo insuficiente. Você tem ${brzBalanceValue.toFixed(2)} BRZ mas precisa de ${investmentAmount} BRZ`);
+    
+    if (brzBalanceValue < requiredBrz) {
+      alert(`Saldo insuficiente. Para investir R$ ${investmentAmount}, você precisa de ${requiredBrz} BRZ. Saldo atual: ${brzBalanceValue.toFixed(2)} BRZ`);
       return;
     }
 
@@ -67,24 +69,26 @@ export const CreditPools: React.FC<CreditPoolsProps> = ({ onInvest }) => {
     }
   };
 
-  const getMaxInvestmentForTerm = (term: number) => {
+  const getMaxInvestmentForTerm = (term: number): number => {
     const brzBalanceValue = brzBalance ? Number(brzBalance.formatted) : 0;
+    const maxByBalance = brzBalanceValue * 10; // 1 BRZ = R$ 10 de investimento
     
-    // Definir limites baseados no prazo e saldo disponível
-    if (term === 30) return Math.min(brzBalanceValue, 1000); // Máximo 1000 BRZ para 30 dias
-    if (term === 60) return Math.min(brzBalanceValue, 5000); // Máximo 5000 BRZ para 60 dias
-    if (term === 90) return Math.min(brzBalanceValue, 10000); // Máximo 10000 BRZ para 90 dias
+    // Definir limites baseados no prazo
+    if (term === 30) return Math.min(maxByBalance, 10000); // Máximo R$ 10.000 para 30 dias
+    if (term === 60) return Math.min(maxByBalance, 50000); // Máximo R$ 50.000 para 60 dias
+    if (term === 90) return Math.min(maxByBalance, 100000); // Máximo R$ 100.000 para 90 dias
     
-    return brzBalanceValue;
+    return maxByBalance;
   };
 
   const getAvailableTerms = (): number[] => {
     const brzBalanceValue = brzBalance ? Number(brzBalance.formatted) : 0;
     const terms: number[] = [];
     
-    if (brzBalanceValue >= 100) terms.push(30); // Mínimo 100 BRZ para 30 dias
-    if (brzBalanceValue >= 500) terms.push(60); // Mínimo 500 BRZ para 60 dias  
-    if (brzBalanceValue >= 1000) terms.push(90); // Mínimo 1000 BRZ para 90 dias
+    // Para investir R$ 100, precisa ter 10 BRZ
+    if (brzBalanceValue >= 10) terms.push(30); // Mínimo 10 BRZ para 30 dias
+    if (brzBalanceValue >= 50) terms.push(60); // Mínimo 50 BRZ para 60 dias  
+    if (brzBalanceValue >= 100) terms.push(90); // Mínimo 100 BRZ para 90 dias
     
     return terms;
   };
@@ -285,6 +289,9 @@ export const CreditPools: React.FC<CreditPoolsProps> = ({ onInvest }) => {
                   {brzBalance ? `${Number(brzBalance.formatted).toFixed(2)} BRZ` : 'Carregando...'}
                 </span>
               </div>
+              <div className="text-xs text-gray-600 mt-1">
+                Capacidade de investimento: {brzBalance ? formatCurrency(Number(brzBalance.formatted) * 10) : 'Carregando...'}
+              </div>
             </div>
 
             {/* Seleção de Prazo */}
@@ -318,7 +325,7 @@ export const CreditPools: React.FC<CreditPoolsProps> = ({ onInvest }) => {
                       <div className="text-center">
                         <div className="font-semibold">{term} dias</div>
                         <div className="text-xs">
-                          {isAvailable ? `Máx: ${getMaxInvestmentForTerm(term)} BRZ` : 'Indisponível'}
+                          {isAvailable ? `Máx: ${formatCurrency(getMaxInvestmentForTerm(term))}` : 'Indisponível'}
                         </div>
                       </div>
                     </button>
@@ -330,7 +337,7 @@ export const CreditPools: React.FC<CreditPoolsProps> = ({ onInvest }) => {
             {/* Valor do Investimento */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Valor do Investimento (BRZ)
+                Valor do Investimento (Reais)
               </label>
               <input
                 type="number"
@@ -338,22 +345,25 @@ export const CreditPools: React.FC<CreditPoolsProps> = ({ onInvest }) => {
                 onChange={(e) => setInvestmentAmount(Number(e.target.value))}
                 max={getMaxInvestmentForTerm(selectedTerm)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c1e428] focus:border-transparent"
-                placeholder={`Min: 100 BRZ | Max: ${getMaxInvestmentForTerm(selectedTerm)} BRZ`}
+                placeholder={`Mín: R$ 100 | Máx: ${formatCurrency(getMaxInvestmentForTerm(selectedTerm))}`}
               />
+              <div className="text-xs text-gray-600 mt-1">
+                BRZ necessário: {(investmentAmount / 10).toFixed(2)} BRZ
+              </div>
               <div className="mt-2 flex justify-between">
                 <button
                   type="button"
                   onClick={() => setInvestmentAmount(Math.min(500, getMaxInvestmentForTerm(selectedTerm)))}
                   className="px-3 py-1 text-xs bg-gray-100 rounded hover:bg-gray-200"
                 >
-                  500 BRZ
+                  R$ 500
                 </button>
                 <button
                   type="button"
-                  onClick={() => setInvestmentAmount(Math.min(1000, getMaxInvestmentForTerm(selectedTerm)))}
+                  onClick={() => setInvestmentAmount(Math.min(5000, getMaxInvestmentForTerm(selectedTerm)))}
                   className="px-3 py-1 text-xs bg-gray-100 rounded hover:bg-gray-200"
                 >
-                  1.000 BRZ
+                  R$ 5.000
                 </button>
                 <button
                   type="button"
@@ -412,7 +422,8 @@ export const CreditPools: React.FC<CreditPoolsProps> = ({ onInvest }) => {
                   isInvesting || 
                   investmentAmount < 100 || 
                   investmentAmount > getMaxInvestmentForTerm(selectedTerm) ||
-                  !getAvailableTerms().includes(selectedTerm)
+                  !getAvailableTerms().includes(selectedTerm) ||
+                  (brzBalance ? Number(brzBalance.formatted) : 0) < (investmentAmount / 10)
                 }
                 className="flex-1 bg-[#c1e428] text-black font-semibold py-3 px-4 rounded-lg hover:bg-[#a8c523] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
