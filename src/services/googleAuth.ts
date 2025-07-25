@@ -1,5 +1,5 @@
 // Google OAuth Configuration
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '281508231912-39ssbnvq23k7e73dbpct62rjttj1tksg.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '281508231912-sk4kenoled17i1udfr44pf1rsipa8c53.apps.googleusercontent.com';
 const GOOGLE_REDIRECT_URI = import.meta.env.VITE_GOOGLE_REDIRECT_URI || 'https://311193ea-13fe-497c-abe1-e419b92bc1af.lovableproject.com/auth/google/callback';
 
 export interface GoogleUser {
