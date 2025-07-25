@@ -36,7 +36,7 @@ export const Header: React.FC = () => {
         <a href="#" className="text-base font-normal text-black cursor-pointer hover:opacity-70 transition-opacity">
           Brands
         </a>*/}
-        <Link to="/defi-investor" className="text-base font-normal text-black cursor-pointer hover:opacity-70 transition-opacity">   DeFi       Investors</Link>
+        <Link to="/defi-investor" className="text-base font-normal text-black cursor-pointer hover:opacity-70 transition-opacity">   DeFi Investors</Link>
         
       </nav>
       
