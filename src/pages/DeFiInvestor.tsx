@@ -30,24 +30,6 @@ const DeFiInvestor = () => {
           </Link>
           
           <nav className="hidden md:flex items-center gap-6">
-            <button 
-              onClick={() => setActiveTab('pools')}
-              className={`text-base font-normal hover:opacity-70 transition-opacity ${activeTab === 'pools' ? 'text-primary font-semibold' : 'text-black'}`}
-            >
-              Pools
-            </button>
-            <button 
-              onClick={() => setActiveTab('credit')}
-              className={`text-base font-normal hover:opacity-70 transition-opacity ${activeTab === 'credit' ? 'text-primary font-semibold' : 'text-black'}`}
-            >
-              Crédito
-            </button>
-            <button 
-              onClick={() => setActiveTab('payment')}
-              className={`text-base font-normal hover:opacity-70 transition-opacity ${activeTab === 'payment' ? 'text-primary font-semibold' : 'text-black'}`}
-            >
-              Pagamentos
-            </button>
             <Button 
               onClick={() => setIsSwapModalOpen(true)}
               variant="outline"
@@ -140,24 +122,10 @@ const DeFiInvestor = () => {
               <PortfolioDashboard />
             </div>
 
-            {/* Dynamic Content Based on Active Tab */}
-            {activeTab === 'pools' && (
-              <div id="pools">
-                <LiquidityPools />
-              </div>
-            )}
-
-            {activeTab === 'credit' && (
-              <div id="credit">
-                <CreditPools />
-              </div>
-            )}
-
-            {activeTab === 'payment' && (
-              <div id="payment">
-                <PaymentDashboard />
-              </div>
-            )}
+            {/* Main Content */}
+            <div id="pools">
+              <LiquidityPools />
+            </div>
           </WalletDetection>
 
           {/* Swap Modal */}
