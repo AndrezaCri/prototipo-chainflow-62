@@ -112,6 +112,13 @@ export const TokenSwap: React.FC<TokenSwapProps> = ({ onSwap }) => {
 
     setIsLoading(true);
     try {
+      // Mostrar toast informativo sobre abertura da carteira
+      toast({
+        title: "Preparando transação...",
+        description: "Sua carteira irá abrir para confirmar as transações necessárias.",
+      });
+
+      // Executar swap - isso abrirá a carteira para aprovação e transação
       const transaction = await usdcBrzSwapService.executeSwap(
         amount,
         fromToken,
@@ -119,24 +126,46 @@ export const TokenSwap: React.FC<TokenSwapProps> = ({ onSwap }) => {
         0.5 // 0.5% slippage
       );
 
+      // Salvar transação no histórico
+      usdcBrzSwapService.saveSwapTransaction(transaction);
+
       toast({
-        title: "Swap realizado com sucesso!",
-        description: `Trocou ${amount} ${fromToken} por ${estimatedOutput} ${toToken}`,
+        title: "Transação enviada!",
+        description: `Hash: ${transaction.hash.slice(0, 10)}... - Aguardando confirmação.`,
       });
+
+      // Aguardar um pouco antes de atualizar saldos
+      setTimeout(async () => {
+        await loadBalances();
+        toast({
+          title: "Swap confirmado!",
+          description: `Trocou ${amount} ${fromToken} por ${estimatedOutput} ${toToken}`,
+        });
+      }, 3000);
 
       // Chamar callback original para compatibilidade
       onSwap(Number(amount), fromToken.toLowerCase(), toToken.toLowerCase());
 
-      // Atualizar saldos e limpar form
-      await loadBalances();
+      // Limpar form
       setAmount('');
       setEstimatedOutput('0.0');
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro no swap:', error);
+      
+      let errorMessage = "Ocorreu um erro ao executar o swap. Tente novamente.";
+      
+      if (error.code === 4001) {
+        errorMessage = "Transação cancelada pelo usuário.";
+      } else if (error.message?.includes('insufficient')) {
+        errorMessage = "Saldo insuficiente ou erro de rede.";
+      } else if (error.message?.includes('denied')) {
+        errorMessage = "Acesso negado pela carteira.";
+      }
+
       toast({
         title: "Erro no swap",
-        description: "Ocorreu um erro ao executar o swap. Tente novamente.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
