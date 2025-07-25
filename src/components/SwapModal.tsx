@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { ArrowUpDown, RefreshCw, TrendingUp, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { usdcBrzSwapService, SwapQuote, SwapTransaction } from '@/services/usdcBrzSwap';
-import { useAccount, usePublicClient } from 'wagmi';
+import { useAccount, usePublicClient, useWalletClient } from 'wagmi';
 
 interface SwapModalProps {
   isOpen: boolean;
@@ -17,6 +17,7 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
   const { toast } = useToast();
   const { address, isConnected } = useAccount();
   const publicClient = usePublicClient();
+  const { data: walletClient } = useWalletClient();
 
   const [tokenIn, setTokenIn] = useState<'USDC' | 'BRZ'>('USDC');
   const [tokenOut, setTokenOut] = useState<'USDC' | 'BRZ'>('BRZ');
@@ -31,6 +32,28 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
   const [slippage, setSlippage] = useState(0.5);
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [showTestFaucet, setShowTestFaucet] = useState(false);
+
+  // Inicializar serviço quando carteira conectar
+  useEffect(() => {
+    const initializeService = async () => {
+      if (isConnected && walletClient) {
+        try {
+          // Criar provider ethers a partir do walletClient
+          const { ethers } = await import('ethers');
+          const provider = new ethers.providers.Web3Provider(
+            walletClient.transport,
+            'any'
+          );
+          await usdcBrzSwapService.initialize(provider);
+          console.log('✅ Serviço de swap inicializado com sucesso');
+        } catch (error) {
+          console.error('❌ Erro ao inicializar serviço de swap:', error);
+        }
+      }
+    };
+
+    initializeService();
+  }, [isConnected, walletClient]);
 
   // Carregar dados quando conectar carteira ou abrir modal
   useEffect(() => {
