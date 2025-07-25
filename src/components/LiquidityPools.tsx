@@ -37,6 +37,12 @@ const USDC_ABI = [
 export const LiquidityPools: React.FC = () => {
   const [selectedPool, setSelectedPool] = useState<string | null>(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [investmentAmounts, setInvestmentAmounts] = useState<{[key: string]: string}>({});
+  const [totalSupplied, setTotalSupplied] = useState<{[key: string]: string}>({
+    'pool1': '50000',
+    'pool2': '75000', 
+    'pool3': '100000'
+  });
   
   // Web3 hooks
   const { isConnected, address } = useAccount();
@@ -113,9 +119,16 @@ export const LiquidityPools: React.FC = () => {
     const pool = pools.find(p => p.id === poolId);
     if (!pool) return;
 
-    // Valor mínimo de investimento (exemplo: $1000 USDC)
+    // Pegar o valor digitado pelo usuário
+    const investmentAmount = parseFloat(investmentAmounts[poolId] || '0');
     const minimumInvestment = 1000;
-    const usdcAmount = minimumInvestment;
+    
+    if (investmentAmount < minimumInvestment) {
+      alert(`Valor mínimo de investimento é $${minimumInvestment} USDC`);
+      return;
+    }
+    
+    const usdcAmount = investmentAmount;
     
     setSelectedPool(poolId);
     setIsProcessingPayment(true);
@@ -192,8 +205,20 @@ export const LiquidityPools: React.FC = () => {
             <div className="grid grid-cols-2 gap-6 mb-6">
               <div>
                 <div className="text-sm font-normal text-[#666666] mb-1">Total Supplied</div>
-                <div className="text-2xl font-bold text-black">
-                  ${pool.amount.toLocaleString()}
+                <div className="relative">
+                  <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">$</span>
+                  <input
+                    type="number"
+                    min="10000"
+                    step="1000"
+                    value={totalSupplied[pool.id] || ''}
+                    onChange={(e) => setTotalSupplied(prev => ({
+                      ...prev,
+                      [pool.id]: e.target.value
+                    }))}
+                    className="w-full pl-6 pr-2 py-1 text-2xl font-bold text-black border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/20 focus:border-transparent bg-transparent"
+                    placeholder="50000"
+                  />
                 </div>
               </div>
               <div>
@@ -230,22 +255,48 @@ export const LiquidityPools: React.FC = () => {
               </div>
             </div>*/}
 
-            {/* Action Button */}
+            {/* Investment Input Section */}
             <div className="space-y-3">
               {!isConnected ? (
                 <div className="text-sm text-gray-600 text-center p-3 bg-gray-50 rounded-lg">
                   Conecte sua carteira para investir com USDC
                 </div>
               ) : (
-                <div className="text-sm text-gray-600 text-center">
-                  Investimento mínimo: $1,000 USDC
-                </div>
+                <>
+                  <div className="text-sm text-gray-600 text-center mb-3">
+                    Investimento mínimo: $1,000 USDC
+                  </div>
+                  
+                  {/* Investment Amount Input */}
+                  <div className="space-y-2">
+                    <label htmlFor={`investment-${pool.id}`} className="block text-sm font-medium text-gray-700">
+                      Valor do Investimento (USDC)
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                      <input
+                        id={`investment-${pool.id}`}
+                        type="number"
+                        min="1000"
+                        step="100"
+                        value={investmentAmounts[pool.id] || ''}
+                        onChange={(e) => setInvestmentAmounts(prev => ({
+                          ...prev,
+                          [pool.id]: e.target.value
+                        }))}
+                        placeholder="1,000"
+                        className="w-full pl-7 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/50 focus:border-transparent text-base"
+                        disabled={selectedPool === pool.id || isProcessingPayment || isPending || isConfirming}
+                      />
+                    </div>
+                  </div>
+                </>
               )}
               
               <button
                 onClick={() => handleFinance(pool.id)}
                 className="w-full bg-black text-white text-base font-medium px-[54px] py-4 rounded-[62px] hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black/50 transition-all duration-300 disabled:bg-[#666666] disabled:cursor-not-allowed"
-                disabled={!isConnected || selectedPool === pool.id || isProcessingPayment || isPending || isConfirming}
+                disabled={!isConnected || selectedPool === pool.id || isProcessingPayment || isPending || isConfirming || !investmentAmounts[pool.id] || parseFloat(investmentAmounts[pool.id] || '0') < 1000}
               >
                 {isProcessingPayment || isPending ? (
                   'Processando Pagamento...'

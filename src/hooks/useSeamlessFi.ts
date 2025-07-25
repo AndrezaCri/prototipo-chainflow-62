@@ -161,6 +161,8 @@ export const useSeamlessFi = () => {
         abi: SEAMLESSFI_ABI,
         functionName: 'investInPool',
         args: [BigInt(poolId), amountInWei],
+        account: address!,
+        chain: undefined,
       });
 
       return true;
@@ -197,6 +199,8 @@ export const useSeamlessFi = () => {
           loanData.companyName,
           loanData.cnpj,
         ],
+        account: address!,
+        chain: undefined,
       });
 
       return true;

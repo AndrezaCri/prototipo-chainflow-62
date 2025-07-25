@@ -396,11 +396,11 @@ export class PixPaymentService {
   /**
    * Simular webhook de confirmação de pagamento PIX
    */
-  static simulatePixWebhook(
+  static async simulatePixWebhook(
     pixCode: string,
     paidAmount: number,
     paymentProof: string
-  ): boolean {
+  ): Promise<boolean> {
     // Encontrar pagamento ou cobrança correspondente
     const payment = pixPayments.find(p => p.pixCode === pixCode);
     const charge = pixCharges.find(c => c.pixCode === pixCode);
@@ -413,9 +413,12 @@ export class PixPaymentService {
     }
 
     if (charge) {
-      return this.processBuyerPayment(charge.id, paidAmount, paymentProof)
-        .then(() => true)
-        .catch(() => false);
+      try {
+        await this.processBuyerPayment(charge.id, paidAmount, paymentProof);
+        return true;
+      } catch {
+        return false;
+      }
     }
 
     return false;

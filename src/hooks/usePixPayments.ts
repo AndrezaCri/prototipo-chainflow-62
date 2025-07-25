@@ -142,13 +142,13 @@ export const usePixPayments = () => {
   }, [loadPixCharges, loadPaymentStats]);
 
   // Simular webhook PIX
-  const simulatePixWebhook = useCallback((
+  const simulatePixWebhook = useCallback(async (
     pixCode: string,
     paidAmount: number,
     paymentProof: string
-  ): boolean => {
+  ): Promise<boolean> => {
     try {
-      const success = PixPaymentService.simulatePixWebhook(
+      const success = await PixPaymentService.simulatePixWebhook(
         pixCode, paidAmount, paymentProof
       );
       
