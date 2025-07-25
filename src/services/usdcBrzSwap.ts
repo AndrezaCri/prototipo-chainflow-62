@@ -1,9 +1,20 @@
 import { ethers } from 'ethers';
 
-// Endereços dos contratos na Base mainnet (dados reais do mercado)
-const USDC_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // USDC nativo na Base
-const BRZ_ADDRESS = '0x420000000000000000000000000000000000000A'; // BRZ na Base
-const AERODROME_ROUTER = '0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43'; // Aerodrome Router na Base
+// Endereços dos contratos na Base mainnet e testnet
+const CONTRACTS = {
+  // Base Mainnet (chainId: 8453)
+  8453: {
+    USDC: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC nativo na Base
+    BRZ: '0x420000000000000000000000000000000000000A', // Placeholder - BRZ pode não existir ainda
+    ROUTER: '0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43' // Aerodrome Router
+  },
+  // Base Sepolia Testnet (chainId: 84532)  
+  84532: {
+    USDC: '0x036CbD53842c5426634e7929541eC2318f3dCF7e', // USDC testnet
+    BRZ: '0x4200000000000000000000000000000000000006', // WETH como mock BRZ
+    ROUTER: '0x94cC0AaC535CCDB3C01d6787D6413C739ae12bc4' // Router testnet
+  }
+};
 
 // ABI simplificada do Uniswap V3 Router
 const UNISWAP_V3_ROUTER_ABI = [
@@ -106,6 +117,18 @@ export interface SwapTransaction {
 class UsdcBrzSwapService {
   private provider: ethers.providers.Web3Provider | null = null;
   private signer: ethers.Signer | null = null;
+  private chainId: number = 8453; // Default para Base mainnet
+
+  /**
+   * Obtém endereços dos contratos baseado na rede atual
+   */
+  private getContractAddresses() {
+    const contracts = CONTRACTS[this.chainId as keyof typeof CONTRACTS];
+    if (!contracts) {
+      throw new Error(`Rede não suportada. ChainId: ${this.chainId}`);
+    }
+    return contracts;
+  }
 
   /**
    * Inicializa o serviço com o provider Web3
@@ -116,17 +139,22 @@ class UsdcBrzSwapService {
       this.provider = provider;
       this.signer = provider.getSigner();
       
-      // Verificar se estamos na rede Base
+      // Verificar rede e definir chainId
       const network = await provider.getNetwork();
-      console.log('📡 Rede conectada:', network);
+      this.chainId = network.chainId;
+      console.log('📡 Rede conectada:', network.name, 'ChainId:', this.chainId);
       
-      if (network.chainId !== 8453 && network.chainId !== 84532) {
-        console.warn('⚠️ Aviso: Não está conectado à rede Base. ChainId:', network.chainId);
+      // Verificar se a rede é suportada
+      if (!CONTRACTS[this.chainId as keyof typeof CONTRACTS]) {
+        throw new Error(`Rede não suportada. Por favor, conecte à Base Mainnet ou Base Sepolia Testnet. ChainId atual: ${this.chainId}`);
       }
       
       // Testar se o signer funciona
       const address = await this.signer.getAddress();
       console.log('✅ Carteira conectada:', address);
+      
+      const contracts = this.getContractAddresses();
+      console.log('📋 Contratos carregados:', contracts);
       
       console.log('✅ Serviço de swap inicializado com sucesso');
     } catch (error) {
@@ -150,8 +178,9 @@ class UsdcBrzSwapService {
   async getSwapQuote(amountIn: string, tokenIn: 'USDC' | 'BRZ', tokenOut: 'USDC' | 'BRZ'): Promise<SwapQuote> {
     this.ensureInitialized();
 
-    const tokenInAddress = tokenIn === 'USDC' ? USDC_ADDRESS : BRZ_ADDRESS;
-    const tokenOutAddress = tokenOut === 'USDC' ? USDC_ADDRESS : BRZ_ADDRESS;
+    const contracts = this.getContractAddresses();
+    const tokenInAddress = tokenIn === 'USDC' ? contracts.USDC : contracts.BRZ;
+    const tokenOutAddress = tokenOut === 'USDC' ? contracts.USDC : contracts.BRZ;
     
     // Para desenvolvimento, simular cotação
     if (import.meta.env.DEV) {
@@ -159,7 +188,7 @@ class UsdcBrzSwapService {
     }
 
     try {
-      const routerContract = new ethers.Contract(AERODROME_ROUTER, UNISWAP_V3_ROUTER_ABI, this.provider!);
+      const routerContract = new ethers.Contract(contracts.ROUTER, UNISWAP_V3_ROUTER_ABI, this.provider!);
       
       const amountInWei = ethers.utils.parseUnits(amountIn, tokenIn === 'USDC' ? 6 : 18);
       const fee = 3000; // 0.3% fee tier
@@ -244,8 +273,9 @@ class UsdcBrzSwapService {
       throw new Error('Carteira não conectada. Conecte sua carteira para realizar transações reais.');
     }
 
-    const tokenInAddress = tokenIn === 'USDC' ? USDC_ADDRESS : BRZ_ADDRESS;
-    const tokenOutAddress = tokenOut === 'USDC' ? USDC_ADDRESS : BRZ_ADDRESS;
+    const contracts = this.getContractAddresses();
+    const tokenInAddress = tokenIn === 'USDC' ? contracts.USDC : contracts.BRZ;
+    const tokenOutAddress = tokenOut === 'USDC' ? contracts.USDC : contracts.BRZ;
 
     try {
       // 1. Obter cotação atual
@@ -258,7 +288,7 @@ class UsdcBrzSwapService {
       await this.approveTokenIfNeeded(tokenInAddress, amountIn, tokenIn);
       
       // 4. Executar swap
-      const routerContract = new ethers.Contract(AERODROME_ROUTER, UNISWAP_V3_ROUTER_ABI, this.signer!);
+      const routerContract = new ethers.Contract(contracts.ROUTER, UNISWAP_V3_ROUTER_ABI, this.signer!);
       
       const amountInWei = ethers.utils.parseUnits(amountIn, tokenIn === 'USDC' ? 6 : 18);
       const amountOutMinWei = ethers.utils.parseUnits(amountOutMin, tokenOut === 'USDC' ? 6 : 18);
@@ -326,18 +356,19 @@ class UsdcBrzSwapService {
     try {
       console.log(`🔍 Verificando aprovação para ${tokenSymbol}...`);
       
+      const contracts = this.getContractAddresses();
       const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, this.signer!);
       const userAddress = await this.signer!.getAddress();
       
       const amountWei = ethers.utils.parseUnits(amount, tokenSymbol === 'USDC' ? 6 : 18);
       console.log('💰 Amount em Wei:', amountWei.toString());
       
-      const allowance = await tokenContract.allowance(userAddress, AERODROME_ROUTER);
+      const allowance = await tokenContract.allowance(userAddress, contracts.ROUTER);
       console.log('📋 Allowance atual:', allowance.toString());
       
       if (allowance.lt(amountWei)) {
         console.log('🔓 Aprovando tokens...');
-        const approveTx = await tokenContract.approve(AERODROME_ROUTER, ethers.constants.MaxUint256);
+        const approveTx = await tokenContract.approve(contracts.ROUTER, ethers.constants.MaxUint256);
         console.log('⏳ Aguardando confirmação da aprovação...');
         await approveTx.wait();
         console.log('✅ Tokens aprovados com sucesso');
@@ -367,7 +398,8 @@ class UsdcBrzSwapService {
     
     this.ensureInitialized();
     
-    const tokenAddress = tokenSymbol === 'USDC' ? USDC_ADDRESS : BRZ_ADDRESS;
+    const contracts = this.getContractAddresses();
+    const tokenAddress = tokenSymbol === 'USDC' ? contracts.USDC : contracts.BRZ;
     const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider!);
     const userAddress = await this.signer!.getAddress();
     
