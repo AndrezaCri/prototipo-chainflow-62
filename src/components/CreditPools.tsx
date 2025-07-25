@@ -38,12 +38,12 @@ export const CreditPools: React.FC<CreditPoolsProps> = ({ onInvest }) => {
       return;
     }
 
-    // Para investir R$ 500, precisa ter 50 BRZ (razão 10:1)
-    const requiredBrz = investmentAmount / 10;
+    // Para investir, precisa ter 10% do valor em BRZ
+    const requiredBrz = investmentAmount * 0.1;
     const brzBalanceValue = brzBalance ? Number(brzBalance.formatted) : 0;
     
     if (brzBalanceValue < requiredBrz) {
-      alert(`Saldo insuficiente. Para investir R$ ${investmentAmount}, você precisa de ${requiredBrz} BRZ. Saldo atual: ${brzBalanceValue.toFixed(2)} BRZ`);
+      alert(`Saldo insuficiente. Para investir ${formatCurrency(investmentAmount)}, você precisa de ${requiredBrz.toFixed(2)} BRZ. Saldo atual: ${brzBalanceValue.toFixed(2)} BRZ`);
       return;
     }
 
@@ -273,24 +273,24 @@ export const CreditPools: React.FC<CreditPoolsProps> = ({ onInvest }) => {
         ))}
       </div>
 
-      {/* Modal de Investimento */}
+      {/* Modal de Investimento Unificado */}
       {selectedPool && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4 max-h-screen overflow-y-auto">
             <h3 className="text-xl font-bold text-gray-900 mb-4">
-              Invest in {creditPools.find(p => p.id.toString() === selectedPool)?.name}
+              Investimento em Credit Pool
             </h3>
             
-            {/* Saldo BRZ */}
-            <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+            {/* Pool selecionado */}
+            <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-gray-700">Seu saldo BRZ:</span>
-                <span className="font-bold text-blue-600">
-                  {brzBalance ? `${Number(brzBalance.formatted).toFixed(2)} BRZ` : 'Carregando...'}
+                <span className="text-sm font-medium text-gray-700">Pool selecionado:</span>
+                <span className="font-bold text-green-700">
+                  {creditPools.find(p => p.id.toString() === selectedPool)?.name}
                 </span>
               </div>
               <div className="text-xs text-gray-600 mt-1">
-                Capacidade de investimento: {brzBalance ? formatCurrency(Number(brzBalance.formatted) * 10) : 'Carregando...'}
+                APY: {creditPools.find(p => p.id.toString() === selectedPool)?.apy}%
               </div>
             </div>
 
@@ -299,38 +299,27 @@ export const CreditPools: React.FC<CreditPoolsProps> = ({ onInvest }) => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Prazo do Investimento
               </label>
-              <div className="grid grid-cols-3 gap-2">
-                {[30, 60, 90].map((term) => {
-                  const isAvailable = getAvailableTerms().includes(term);
-                  return (
-                    <button
-                      key={term}
-                      type="button"
-                      onClick={() => {
-                        if (isAvailable) {
-                          setSelectedTerm(term);
-                          // Reset amount when changing term
-                          setInvestmentAmount(0);
-                        }
-                      }}
-                      disabled={!isAvailable}
-                      className={`p-3 rounded-lg border-2 transition-colors ${
-                        selectedTerm === term 
-                          ? 'border-[#c1e428] bg-[#c1e428] text-black' 
-                          : isAvailable
-                            ? 'border-gray-300 hover:border-[#c1e428]'
-                            : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
-                      }`}
-                    >
-                      <div className="text-center">
-                        <div className="font-semibold">{term} dias</div>
-                        <div className="text-xs">
-                          {isAvailable ? `Máx: ${formatCurrency(getMaxInvestmentForTerm(term))}` : 'Indisponível'}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
+              <div className="grid grid-cols-3 gap-3">
+                {[30, 60, 90].map((term) => (
+                  <button
+                    key={term}
+                    type="button"
+                    onClick={() => {
+                      setSelectedTerm(term);
+                      setInvestmentAmount(0);
+                    }}
+                    className={`p-4 rounded-lg border-2 transition-colors ${
+                      selectedTerm === term 
+                        ? 'border-[#c1e428] bg-[#c1e428] text-black' 
+                        : 'border-gray-300 hover:border-[#c1e428] bg-white'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="font-semibold text-lg">{term}</div>
+                      <div className="text-xs">dias</div>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -341,99 +330,167 @@ export const CreditPools: React.FC<CreditPoolsProps> = ({ onInvest }) => {
               </label>
               <input
                 type="number"
-                value={investmentAmount}
+                value={investmentAmount || ''}
                 onChange={(e) => setInvestmentAmount(Number(e.target.value))}
-                max={getMaxInvestmentForTerm(selectedTerm)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c1e428] focus:border-transparent"
-                placeholder={`Mín: R$ 100 | Máx: ${formatCurrency(getMaxInvestmentForTerm(selectedTerm))}`}
+                min="100"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c1e428] focus:border-transparent text-lg"
+                placeholder="Digite o valor em R$"
               />
-              <div className="text-xs text-gray-600 mt-1">
-                BRZ necessário: {(investmentAmount / 10).toFixed(2)} BRZ
+              
+              {/* Regra de Proporcionalidade */}
+              <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <div className="w-4 h-4 bg-yellow-400 rounded-full flex-shrink-0 mt-0.5"></div>
+                  <div className="text-sm">
+                    <div className="font-medium text-yellow-800 mb-1">Regra de Proporcionalidade:</div>
+                    <div className="text-yellow-700">
+                      Para investir <strong>R$ {investmentAmount || 'X'}</strong>, é necessário ter pelo menos{' '}
+                      <strong>10% desse valor</strong> disponível em BRZ na carteira.
+                    </div>
+                    <div className="text-yellow-600 text-xs mt-1">
+                      Exemplo: Investimento de R$ 500 requer R$ 50 em BRZ
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="mt-2 flex justify-between">
-                <button
-                  type="button"
-                  onClick={() => setInvestmentAmount(Math.min(500, getMaxInvestmentForTerm(selectedTerm)))}
-                  className="px-3 py-1 text-xs bg-gray-100 rounded hover:bg-gray-200"
-                >
-                  R$ 500
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setInvestmentAmount(Math.min(5000, getMaxInvestmentForTerm(selectedTerm)))}
-                  className="px-3 py-1 text-xs bg-gray-100 rounded hover:bg-gray-200"
-                >
-                  R$ 5.000
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setInvestmentAmount(getMaxInvestmentForTerm(selectedTerm))}
-                  className="px-3 py-1 text-xs bg-gray-100 rounded hover:bg-gray-200"
-                >
-                  Máximo
-                </button>
+
+              {/* Botões de valores rápidos */}
+              <div className="mt-3 flex gap-2 flex-wrap">
+                {[500, 1000, 5000, 10000].map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setInvestmentAmount(value)}
+                    className="px-4 py-2 text-sm bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                  >
+                    R$ {value.toLocaleString()}
+                  </button>
+                ))}
               </div>
             </div>
 
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-              <h4 className="font-semibold text-gray-900 mb-2">Resumo do Investimento</h4>
-              <div className="space-y-1 text-sm">
-                <div className="flex justify-between">
-                  <span>Valor:</span>
-                  <span>{formatCurrency(investmentAmount)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Prazo:</span>
-                  <span>{selectedTerm} dias</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>APY Estimado:</span>
-                  <span>{creditPools.find(p => p.id.toString() === selectedPool)?.apy}%</span>
-                </div>
-                <div className="flex justify-between font-semibold">
-                  <span>Retorno Esperado:</span>
-                  <span>
-                    {formatCurrency(
-                      investmentAmount * (1 + (creditPools.find(p => p.id.toString() === selectedPool)?.apy || 0) / 100 * (selectedTerm / 365))
-                    )}
+            {/* Verificação de Saldo BRZ */}
+            <div className="mb-4">
+              <div className="flex justify-between items-center mb-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Verificar Saldo BRZ
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    // Simulação de abertura da carteira
+                    alert('Abrindo carteira para verificar saldo BRZ...');
+                  }}
+                  className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                >
+                  Abrir Carteira
+                </button>
+              </div>
+              <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-700">Saldo atual:</span>
+                  <span className="font-bold text-blue-600">
+                    {brzBalance ? `${Number(brzBalance.formatted).toFixed(2)} BRZ` : 'Conecte a carteira'}
                   </span>
                 </div>
-                <div className="flex justify-between font-semibold text-green-600">
-                  <span>Rendimento:</span>
-                  <span>
-                    {formatCurrency(
-                      investmentAmount * ((creditPools.find(p => p.id.toString() === selectedPool)?.apy || 0) / 100 * (selectedTerm / 365))
-                    )}
-                  </span>
-                </div>
+                {investmentAmount > 0 && (
+                  <div className="mt-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">BRZ necessário:</span>
+                      <span className="font-medium">
+                        {(investmentAmount * 0.1).toFixed(2)} BRZ
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Status:</span>
+                      <span className={`font-medium ${
+                        brzBalance && Number(brzBalance.formatted) >= (investmentAmount * 0.1)
+                          ? 'text-green-600' 
+                          : 'text-red-600'
+                      }`}>
+                        {brzBalance && Number(brzBalance.formatted) >= (investmentAmount * 0.1)
+                          ? '✓ Saldo suficiente' 
+                          : '✗ Saldo insuficiente'
+                        }
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
+
+            {/* Simulação de Retorno */}
+            {investmentAmount > 0 && selectedTerm > 0 && (
+              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <h4 className="font-semibold text-green-900 mb-3 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  Simulação de Retorno
+                </h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-700">Valor investido:</span>
+                    <span className="font-semibold">{formatCurrency(investmentAmount)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-700">Prazo:</span>
+                    <span className="font-semibold">{selectedTerm} dias</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-700">APY:</span>
+                    <span className="font-semibold">
+                      {creditPools.find(p => p.id.toString() === selectedPool)?.apy}%
+                    </span>
+                  </div>
+                  <div className="border-t border-green-200 pt-2 mt-2">
+                    <div className="flex justify-between">
+                      <span className="text-gray-700">Juros estimado:</span>
+                      <span className="font-semibold text-green-700">
+                        {formatCurrency(
+                          investmentAmount * ((creditPools.find(p => p.id.toString() === selectedPool)?.apy || 0) / 100 * (selectedTerm / 365))
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-700 font-medium">Valor total ao final:</span>
+                      <span className="font-bold text-green-800 text-lg">
+                        {formatCurrency(
+                          investmentAmount * (1 + (creditPools.find(p => p.id.toString() === selectedPool)?.apy || 0) / 100 * (selectedTerm / 365))
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="flex gap-3">
               <button
-                onClick={() => setSelectedPool(null)}
+                onClick={() => {
+                  setSelectedPool(null);
+                  setInvestmentAmount(0);
+                  setSelectedTerm(30);
+                }}
                 className="flex-1 bg-gray-200 text-gray-800 font-semibold py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors"
               >
-                Cancel
+                Cancelar
               </button>
               <button
                 onClick={() => handleInvest(selectedPool)}
                 disabled={
                   isInvesting || 
                   investmentAmount < 100 || 
-                  investmentAmount > getMaxInvestmentForTerm(selectedTerm) ||
-                  !getAvailableTerms().includes(selectedTerm) ||
-                  (brzBalance ? Number(brzBalance.formatted) : 0) < (investmentAmount / 10)
+                  selectedTerm === 0 ||
+                  (brzBalance && Number(brzBalance.formatted) < (investmentAmount * 0.1))
                 }
                 className="flex-1 bg-[#c1e428] text-black font-semibold py-3 px-4 rounded-lg hover:bg-[#a8c523] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isInvesting ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black"></div>
-                    Investing...
+                    Investindo...
                   </>
                 ) : (
-                  'Confirm Investment'
+                  'Confirmar Investimento'
                 )}
               </button>
             </div>
