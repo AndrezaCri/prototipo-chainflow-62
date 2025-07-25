@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TrendingUp, Shield, Clock, DollarSign, Users, BarChart3, AlertTriangle } from 'lucide-react';
 import { useSeamlessFi } from '@/hooks/useSeamlessFi';
+import { useBalance } from 'wagmi';
+import { useAccount } from 'wagmi';
 
 interface CreditPoolsProps {
   onInvest?: (poolId: string, amount: number) => void;
@@ -8,9 +10,19 @@ interface CreditPoolsProps {
 
 export const CreditPools: React.FC<CreditPoolsProps> = ({ onInvest }) => {
   const { getPoolsData, investInPool, isLoading, error, isConnected } = useSeamlessFi();
+  const { address } = useAccount();
   const [selectedPool, setSelectedPool] = useState<string | null>(null);
   const [investmentAmount, setInvestmentAmount] = useState<number>(0);
+  const [selectedTerm, setSelectedTerm] = useState<number>(30);
   const [isInvesting, setIsInvesting] = useState(false);
+  
+  // BRZ token address (Base network)
+  const BRZ_TOKEN_ADDRESS = '0x420000000000000000000000000000000000000A';
+  
+  const { data: brzBalance } = useBalance({
+    address: address as `0x${string}`,
+    token: BRZ_TOKEN_ADDRESS as `0x${string}`,
+  });
 
   const creditPools = getPoolsData();
 
@@ -26,6 +38,13 @@ export const CreditPools: React.FC<CreditPoolsProps> = ({ onInvest }) => {
       return;
     }
 
+    // Verificar se tem BRZ suficiente
+    const brzBalanceValue = brzBalance ? Number(brzBalance.formatted) : 0;
+    if (brzBalanceValue < investmentAmount) {
+      alert(`Saldo insuficiente. Você tem ${brzBalanceValue.toFixed(2)} BRZ mas precisa de ${investmentAmount} BRZ`);
+      return;
+    }
+
     setIsInvesting(true);
     
     try {
@@ -37,6 +56,7 @@ export const CreditPools: React.FC<CreditPoolsProps> = ({ onInvest }) => {
         }
         setSelectedPool(null);
         setInvestmentAmount(0);
+        setSelectedTerm(30);
         alert('Investimento realizado com sucesso!');
       }
     } catch (err) {
@@ -45,6 +65,28 @@ export const CreditPools: React.FC<CreditPoolsProps> = ({ onInvest }) => {
     } finally {
       setIsInvesting(false);
     }
+  };
+
+  const getMaxInvestmentForTerm = (term: number) => {
+    const brzBalanceValue = brzBalance ? Number(brzBalance.formatted) : 0;
+    
+    // Definir limites baseados no prazo e saldo disponível
+    if (term === 30) return Math.min(brzBalanceValue, 1000); // Máximo 1000 BRZ para 30 dias
+    if (term === 60) return Math.min(brzBalanceValue, 5000); // Máximo 5000 BRZ para 60 dias
+    if (term === 90) return Math.min(brzBalanceValue, 10000); // Máximo 10000 BRZ para 90 dias
+    
+    return brzBalanceValue;
+  };
+
+  const getAvailableTerms = (): number[] => {
+    const brzBalanceValue = brzBalance ? Number(brzBalance.formatted) : 0;
+    const terms: number[] = [];
+    
+    if (brzBalanceValue >= 100) terms.push(30); // Mínimo 100 BRZ para 30 dias
+    if (brzBalanceValue >= 500) terms.push(60); // Mínimo 500 BRZ para 60 dias  
+    if (brzBalanceValue >= 1000) terms.push(90); // Mínimo 1000 BRZ para 90 dias
+    
+    return terms;
   };
 
   const formatCurrency = (value: number) => {
@@ -235,39 +277,122 @@ export const CreditPools: React.FC<CreditPoolsProps> = ({ onInvest }) => {
               Invest in {creditPools.find(p => p.id.toString() === selectedPool)?.name}
             </h3>
             
+            {/* Saldo BRZ */}
+            <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-700">Seu saldo BRZ:</span>
+                <span className="font-bold text-blue-600">
+                  {brzBalance ? `${Number(brzBalance.formatted).toFixed(2)} BRZ` : 'Carregando...'}
+                </span>
+              </div>
+            </div>
+
+            {/* Seleção de Prazo */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Investment Amount (USDC)
+                Prazo do Investimento
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {[30, 60, 90].map((term) => {
+                  const isAvailable = getAvailableTerms().includes(term);
+                  return (
+                    <button
+                      key={term}
+                      type="button"
+                      onClick={() => {
+                        if (isAvailable) {
+                          setSelectedTerm(term);
+                          // Reset amount when changing term
+                          setInvestmentAmount(0);
+                        }
+                      }}
+                      disabled={!isAvailable}
+                      className={`p-3 rounded-lg border-2 transition-colors ${
+                        selectedTerm === term 
+                          ? 'border-[#c1e428] bg-[#c1e428] text-black' 
+                          : isAvailable
+                            ? 'border-gray-300 hover:border-[#c1e428]'
+                            : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                      }`}
+                    >
+                      <div className="text-center">
+                        <div className="font-semibold">{term} dias</div>
+                        <div className="text-xs">
+                          {isAvailable ? `Máx: ${getMaxInvestmentForTerm(term)} BRZ` : 'Indisponível'}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Valor do Investimento */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Valor do Investimento (BRZ)
               </label>
               <input
                 type="number"
                 value={investmentAmount}
                 onChange={(e) => setInvestmentAmount(Number(e.target.value))}
+                max={getMaxInvestmentForTerm(selectedTerm)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c1e428] focus:border-transparent"
-                placeholder={`Min: ${creditPools.find(p => p.id.toString() === selectedPool)?.minInvestment} USDC`}
+                placeholder={`Min: 100 BRZ | Max: ${getMaxInvestmentForTerm(selectedTerm)} BRZ`}
               />
+              <div className="mt-2 flex justify-between">
+                <button
+                  type="button"
+                  onClick={() => setInvestmentAmount(Math.min(500, getMaxInvestmentForTerm(selectedTerm)))}
+                  className="px-3 py-1 text-xs bg-gray-100 rounded hover:bg-gray-200"
+                >
+                  500 BRZ
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInvestmentAmount(Math.min(1000, getMaxInvestmentForTerm(selectedTerm)))}
+                  className="px-3 py-1 text-xs bg-gray-100 rounded hover:bg-gray-200"
+                >
+                  1.000 BRZ
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInvestmentAmount(getMaxInvestmentForTerm(selectedTerm))}
+                  className="px-3 py-1 text-xs bg-gray-100 rounded hover:bg-gray-200"
+                >
+                  Máximo
+                </button>
+              </div>
             </div>
 
             <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-              <h4 className="font-semibold text-gray-900 mb-2">Investment Summary</h4>
+              <h4 className="font-semibold text-gray-900 mb-2">Resumo do Investimento</h4>
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span>Amount:</span>
-                  <span>{formatUSDC(investmentAmount)}</span>
+                  <span>Valor:</span>
+                  <span>{formatCurrency(investmentAmount)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>APY:</span>
+                  <span>Prazo:</span>
+                  <span>{selectedTerm} dias</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>APY Estimado:</span>
                   <span>{creditPools.find(p => p.id.toString() === selectedPool)?.apy}%</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Term:</span>
-                  <span>{creditPools.find(p => p.id.toString() === selectedPool)?.term} days</span>
-                </div>
                 <div className="flex justify-between font-semibold">
-                  <span>Expected Return:</span>
+                  <span>Retorno Esperado:</span>
                   <span>
-                    {formatUSDC(
-                      investmentAmount * (1 + (creditPools.find(p => p.id.toString() === selectedPool)?.apy || 0) / 100)
+                    {formatCurrency(
+                      investmentAmount * (1 + (creditPools.find(p => p.id.toString() === selectedPool)?.apy || 0) / 100 * (selectedTerm / 365))
+                    )}
+                  </span>
+                </div>
+                <div className="flex justify-between font-semibold text-green-600">
+                  <span>Rendimento:</span>
+                  <span>
+                    {formatCurrency(
+                      investmentAmount * ((creditPools.find(p => p.id.toString() === selectedPool)?.apy || 0) / 100 * (selectedTerm / 365))
                     )}
                   </span>
                 </div>
@@ -283,7 +408,12 @@ export const CreditPools: React.FC<CreditPoolsProps> = ({ onInvest }) => {
               </button>
               <button
                 onClick={() => handleInvest(selectedPool)}
-                disabled={isInvesting || investmentAmount < (creditPools.find(p => p.id.toString() === selectedPool)?.minInvestment || 0)}
+                disabled={
+                  isInvesting || 
+                  investmentAmount < 100 || 
+                  investmentAmount > getMaxInvestmentForTerm(selectedTerm) ||
+                  !getAvailableTerms().includes(selectedTerm)
+                }
                 className="flex-1 bg-[#c1e428] text-black font-semibold py-3 px-4 rounded-lg hover:bg-[#a8c523] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isInvesting ? (
