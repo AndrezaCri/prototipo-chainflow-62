@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { TokenSwap } from './TokenSwap';
+import { SwapModal } from './SwapModal';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useConfig } from 'wagmi';
 import { parseUnits } from 'viem';
 
@@ -171,11 +171,22 @@ export const LiquidityPools: React.FC = () => {
     return 'text-[#FF3547]';
   };
 
+  const [isSwapModalOpen, setIsSwapModalOpen] = useState(false);
+
   return (
     <div className="space-y-8">
       {/* Token Swap Section */}
       <div className="mb-8">
-        <TokenSwap onSwap={handleSwap} />
+        <div className="bg-white border border-[#f0f0f0] rounded-[20px] p-6">
+          <h3 className="text-xl font-bold text-black mb-4">SWAP USDC ⇄ BRZ</h3>
+          <p className="text-sm text-[#666666] mb-4">Troque tokens na Base Sepolia</p>
+          <button 
+            onClick={() => setIsSwapModalOpen(true)}
+            className="w-full bg-[#c1e428] hover:bg-[#a8c922] text-black font-medium py-3 px-6 rounded-lg transition-colors"
+          >
+            Abrir SWAP
+          </button>
+        </div>
       </div>
       <div className="text-center mb-12">
         <h2 className="text-[48px] font-bold leading-[57px] text-black mb-4 max-md:text-4xl max-sm:text-3xl">
@@ -317,6 +328,12 @@ export const LiquidityPools: React.FC = () => {
           </div>
         ))}
       </div>
+
+      {/* SwapModal */}
+      <SwapModal 
+        isOpen={isSwapModalOpen} 
+        onClose={() => setIsSwapModalOpen(false)} 
+      />
     </div>
   );
 };
