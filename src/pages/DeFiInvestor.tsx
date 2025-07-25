@@ -5,12 +5,12 @@ import { LiquidityPools } from '@/components/LiquidityPools';
 import { WalletDetection } from '@/components/WalletDetection';
 import { SwapModal } from '@/components/SwapModal';
 import { CreditPools } from '@/components/CreditPools';
-import { B2BMarketplace } from '@/components/B2BMarketplace';
+
 import { PaymentDashboard } from '@/components/PaymentDashboard';
 import { Link } from 'react-router-dom';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { Button } from '@/components/ui/button';
-import { ArrowLeftRight, CreditCard, ShoppingCart, Shield } from 'lucide-react';
+import { ArrowLeftRight, CreditCard, Shield } from 'lucide-react';
 
 const DeFiInvestor = () => {
   const [activeTab, setActiveTab] = useState('pools');
@@ -43,12 +43,6 @@ const DeFiInvestor = () => {
               Crédito
             </button>
             <button 
-              onClick={() => setActiveTab('b2b')}
-              className={`text-base font-normal hover:opacity-70 transition-opacity ${activeTab === 'b2b' ? 'text-primary font-semibold' : 'text-black'}`}
-            >
-              B2B
-            </button>
-            <button 
               onClick={() => setActiveTab('payment')}
               className={`text-base font-normal hover:opacity-70 transition-opacity ${activeTab === 'payment' ? 'text-primary font-semibold' : 'text-black'}`}
             >
@@ -79,7 +73,7 @@ const DeFiInvestor = () => {
             </p>
             
             {/* Feature Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
               <div className="bg-white p-4 rounded-lg shadow-sm border">
                 <ArrowLeftRight className="w-6 h-6 text-primary mb-2" />
                 <h3 className="font-semibold text-sm">SWAP USDC/BRZ</h3>
@@ -89,11 +83,6 @@ const DeFiInvestor = () => {
                 <CreditCard className="w-6 h-6 text-primary mb-2" />
                 <h3 className="font-semibold text-sm">Crédito ChainFlow</h3>
                 <p className="text-xs text-muted-foreground">Acesso facilitado</p>
-              </div>
-              <div className="bg-white p-4 rounded-lg shadow-sm border">
-                <ShoppingCart className="w-6 h-6 text-primary mb-2" />
-                <h3 className="font-semibold text-sm">Compras B2B</h3>
-                <p className="text-xs text-muted-foreground">Facilitadas</p>
               </div>
               <div className="bg-white p-4 rounded-lg shadow-sm border">
                 <Shield className="w-6 h-6 text-primary mb-2" />
@@ -161,12 +150,6 @@ const DeFiInvestor = () => {
             {activeTab === 'credit' && (
               <div id="credit">
                 <CreditPools />
-              </div>
-            )}
-
-            {activeTab === 'b2b' && (
-              <div id="b2b">
-                <B2BMarketplace />
               </div>
             )}
 
