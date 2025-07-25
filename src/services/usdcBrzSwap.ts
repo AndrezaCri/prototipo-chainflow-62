@@ -112,6 +112,11 @@ class UsdcBrzSwapService {
    * Verifica se o serviço está inicializado
    */
   private ensureInitialized(): void {
+    // Em modo de desenvolvimento, permitir operações simuladas sem carteira
+    if (import.meta.env.DEV) {
+      return;
+    }
+    
     if (!this.provider || !this.signer) {
       throw new Error('Serviço não inicializado. Conecte uma carteira primeiro.');
     }
@@ -310,13 +315,18 @@ class UsdcBrzSwapService {
    * Obtém saldo de token
    */
   async getTokenBalance(tokenSymbol: 'USDC' | 'BRZ'): Promise<string> {
-    this.ensureInitialized();
-    
-    // Verificar se há saldo de teste salvo localmente
+    // Verificar se há saldo de teste salvo localmente primeiro
     const testBalance = localStorage.getItem(`testnet_${tokenSymbol.toLowerCase()}_balance`);
     if (testBalance) {
       return testBalance;
     }
+    
+    // Para desenvolvimento, retornar 0 se não houver saldo de teste
+    if (import.meta.env.DEV) {
+      return '0.00';
+    }
+    
+    this.ensureInitialized();
     
     const tokenAddress = tokenSymbol === 'USDC' ? USDC_ADDRESS : BRZ_ADDRESS;
     const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider!);

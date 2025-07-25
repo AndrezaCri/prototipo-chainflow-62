@@ -33,9 +33,12 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
   // Inicializar serviço quando conectar carteira
   useEffect(() => {
     if (isConnected && publicClient) {
-      // Para desenvolvimento, usar simulação
-      loadBalances();
-      loadExchangeRate();
+      // Para desenvolvimento, usar simulação - inicializar o serviço mesmo sem provider real
+      if (import.meta.env.DEV) {
+        // Simular inicialização para desenvolvimento
+        loadBalances();
+        loadExchangeRate();
+      }
     }
   }, [isConnected, publicClient]);
 
@@ -83,9 +86,16 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
     
     setLoading(true);
     try {
-      const swapQuote = await usdcBrzSwapService.getSwapQuote(amountIn, tokenIn, tokenOut);
-      setQuote(swapQuote);
-      setAmountOut(swapQuote.amountOut);
+      // Para desenvolvimento, usar cotação simulada
+      if (import.meta.env.DEV) {
+        const simulatedQuote = simulateQuote(amountIn, tokenIn, tokenOut);
+        setQuote(simulatedQuote);
+        setAmountOut(simulatedQuote.amountOut);
+      } else {
+        const swapQuote = await usdcBrzSwapService.getSwapQuote(amountIn, tokenIn, tokenOut);
+        setQuote(swapQuote);
+        setAmountOut(swapQuote.amountOut);
+      }
     } catch (error) {
       console.error('Erro ao obter cotação:', error);
       toast({
@@ -96,6 +106,39 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Função para simular cotação em modo de desenvolvimento
+  const simulateQuote = (amountIn: string, tokenIn: 'USDC' | 'BRZ', tokenOut: 'USDC' | 'BRZ') => {
+    const usdcToBrzRate = 5.2;
+    const brzToUsdcRate = 1 / usdcToBrzRate;
+    
+    let amountOut: number;
+    let exchangeRate: number;
+    
+    if (tokenIn === 'USDC' && tokenOut === 'BRZ') {
+      amountOut = parseFloat(amountIn) * usdcToBrzRate;
+      exchangeRate = usdcToBrzRate;
+    } else if (tokenIn === 'BRZ' && tokenOut === 'USDC') {
+      amountOut = parseFloat(amountIn) * brzToUsdcRate;
+      exchangeRate = brzToUsdcRate;
+    } else {
+      throw new Error('Par de tokens inválido');
+    }
+
+    // Aplicar fee de 0.3%
+    const feeAmount = amountOut * 0.003;
+    amountOut = amountOut - feeAmount;
+
+    return {
+      amountIn,
+      amountOut: amountOut.toFixed(tokenOut === 'USDC' ? 6 : 2),
+      tokenIn,
+      tokenOut,
+      priceImpact: 0.1,
+      exchangeRate,
+      fee: '0.3%'
+    };
   };
 
   const handleSwapTokens = () => {
@@ -147,12 +190,22 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
 
     setSwapping(true);
     try {
-      const transaction = await usdcBrzSwapService.executeSwap(
-        amountIn,
-        tokenIn,
-        tokenOut,
-        slippage
-      );
+      let transaction;
+      
+      // Para desenvolvimento, simular swap
+      if (import.meta.env.DEV) {
+        transaction = await simulateSwapExecution(amountIn, tokenIn, tokenOut);
+        
+        // Atualizar saldos de teste
+        updateTestBalances(amountIn, quote.amountOut, tokenIn, tokenOut);
+      } else {
+        transaction = await usdcBrzSwapService.executeSwap(
+          amountIn,
+          tokenIn,
+          tokenOut,
+          slippage
+        );
+      }
 
       // Salvar transação no histórico
       usdcBrzSwapService.saveSwapTransaction(transaction);
@@ -180,6 +233,35 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
     } finally {
       setSwapping(false);
     }
+  };
+
+  // Simula execução de swap em desenvolvimento
+  const simulateSwapExecution = async (amountIn: string, tokenIn: 'USDC' | 'BRZ', tokenOut: 'USDC' | 'BRZ') => {
+    return new Promise<any>((resolve) => {
+      setTimeout(() => {
+        resolve({
+          hash: '0x' + Math.random().toString(16).substr(2, 64),
+          amountIn,
+          amountOut: quote?.amountOut || '0',
+          tokenIn,
+          tokenOut,
+          timestamp: Date.now(),
+          status: 'confirmed'
+        });
+      }, 2000);
+    });
+  };
+
+  // Atualiza saldos de teste localmente
+  const updateTestBalances = (amountIn: string, amountOut: string, tokenIn: 'USDC' | 'BRZ', tokenOut: 'USDC' | 'BRZ') => {
+    const currentBalanceIn = parseFloat(balanceIn);
+    const currentBalanceOut = parseFloat(balanceOut);
+    
+    const newBalanceIn = currentBalanceIn - parseFloat(amountIn);
+    const newBalanceOut = currentBalanceOut + parseFloat(amountOut);
+    
+    localStorage.setItem(`testnet_${tokenIn.toLowerCase()}_balance`, newBalanceIn.toFixed(6));
+    localStorage.setItem(`testnet_${tokenOut.toLowerCase()}_balance`, newBalanceOut.toFixed(6));
   };
 
   const formatCurrency = (value: string, currency: string) => {
