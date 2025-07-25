@@ -127,7 +127,7 @@ class UsdcBrzSwapService {
     const tokenOutAddress = tokenOut === 'USDC' ? USDC_ADDRESS : BRZ_ADDRESS;
     
     // Para desenvolvimento, simular cotação
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       return this.simulateSwapQuote(amountIn, tokenIn, tokenOut);
     }
 
@@ -214,7 +214,7 @@ class UsdcBrzSwapService {
     const tokenOutAddress = tokenOut === 'USDC' ? USDC_ADDRESS : BRZ_ADDRESS;
     
     // Para desenvolvimento, simular transação
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       return this.simulateSwapTransaction(amountIn, tokenIn, tokenOut);
     }
 
