@@ -1,12 +1,21 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { PortfolioDashboard } from '@/components/PortfolioDashboard';
 import { LiquidityPools } from '@/components/LiquidityPools';
 import { WalletDetection } from '@/components/WalletDetection';
+import { SwapModal } from '@/components/SwapModal';
+import { CreditPools } from '@/components/CreditPools';
+import { B2BMarketplace } from '@/components/B2BMarketplace';
+import { PaymentDashboard } from '@/components/PaymentDashboard';
 import { Link } from 'react-router-dom';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { Button } from '@/components/ui/button';
+import { ArrowLeftRight, CreditCard, ShoppingCart, Shield } from 'lucide-react';
 
 const DeFiInvestor = () => {
+  const [activeTab, setActiveTab] = useState('pools');
+  const [isSwapModalOpen, setIsSwapModalOpen] = useState(false);
+
   return (
     <>
       <link
@@ -21,15 +30,39 @@ const DeFiInvestor = () => {
           </Link>
           
           <nav className="hidden md:flex items-center gap-6">
-            <a href="#pools" className="text-base font-normal text-black hover:opacity-70 transition-opacity">
+            <button 
+              onClick={() => setActiveTab('pools')}
+              className={`text-base font-normal hover:opacity-70 transition-opacity ${activeTab === 'pools' ? 'text-primary font-semibold' : 'text-black'}`}
+            >
               Pools
-            </a>
-            <a href="#portfolio" className="text-base font-normal text-black hover:opacity-70 transition-opacity">
-              Portfolio
-            </a>
-            <a href="#analytics" className="text-base font-normal text-black hover:opacity-70 transition-opacity">
-              Analytics
-            </a>
+            </button>
+            <button 
+              onClick={() => setActiveTab('credit')}
+              className={`text-base font-normal hover:opacity-70 transition-opacity ${activeTab === 'credit' ? 'text-primary font-semibold' : 'text-black'}`}
+            >
+              Crédito
+            </button>
+            <button 
+              onClick={() => setActiveTab('b2b')}
+              className={`text-base font-normal hover:opacity-70 transition-opacity ${activeTab === 'b2b' ? 'text-primary font-semibold' : 'text-black'}`}
+            >
+              B2B
+            </button>
+            <button 
+              onClick={() => setActiveTab('payment')}
+              className={`text-base font-normal hover:opacity-70 transition-opacity ${activeTab === 'payment' ? 'text-primary font-semibold' : 'text-black'}`}
+            >
+              Pagamentos
+            </button>
+            <Button 
+              onClick={() => setIsSwapModalOpen(true)}
+              variant="outline"
+              size="sm"
+              className="ml-2"
+            >
+              <ArrowLeftRight className="w-4 h-4 mr-2" />
+              SWAP
+            </Button>
           </nav>
 
           <ConnectButton />
@@ -42,8 +75,32 @@ const DeFiInvestor = () => {
               FINANCE B2B BUSINESS
             </h1>
             <p className="text-base font-normal leading-[22px] text-[#666666] mb-8 max-sm:text-sm max-sm:leading-5 max-sm:mb-6">
-              Finance small businesses and earn competitive yields on a secure DeFi platform.
+              Plataforma DeFi integrada com SWAP USDC ⇄ BRZ, crédito ChainFlow, compras B2B e transações seguras.
             </p>
+            
+            {/* Feature Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              <div className="bg-white p-4 rounded-lg shadow-sm border">
+                <ArrowLeftRight className="w-6 h-6 text-primary mb-2" />
+                <h3 className="font-semibold text-sm">SWAP USDC/BRZ</h3>
+                <p className="text-xs text-muted-foreground">Base Sepolia</p>
+              </div>
+              <div className="bg-white p-4 rounded-lg shadow-sm border">
+                <CreditCard className="w-6 h-6 text-primary mb-2" />
+                <h3 className="font-semibold text-sm">Crédito ChainFlow</h3>
+                <p className="text-xs text-muted-foreground">Acesso facilitado</p>
+              </div>
+              <div className="bg-white p-4 rounded-lg shadow-sm border">
+                <ShoppingCart className="w-6 h-6 text-primary mb-2" />
+                <h3 className="font-semibold text-sm">Compras B2B</h3>
+                <p className="text-xs text-muted-foreground">Facilitadas</p>
+              </div>
+              <div className="bg-white p-4 rounded-lg shadow-sm border">
+                <Shield className="w-6 h-6 text-primary mb-2" />
+                <h3 className="font-semibold text-sm">Transações</h3>
+                <p className="text-xs text-muted-foreground">Seguras</p>
+              </div>
+            </div>
             
             <div className="flex gap-8 max-md:justify-center max-md:flex-wrap max-md:gap-6 max-sm:flex-col max-sm:gap-4">
               <div className="text-left max-sm:text-center">
@@ -89,16 +146,42 @@ const DeFiInvestor = () => {
         {/* Main Content */}
         <main className="px-[100px] py-12 max-md:px-10 max-sm:px-5">
           <WalletDetection>
-            {/* Portfolio Section */}
+            {/* Portfolio Section - Always visible */}
             <div className="mb-16" id="portfolio">
               <PortfolioDashboard />
             </div>
 
-            {/* Liquidity Pools Section */}
-            <div id="pools">
-              <LiquidityPools />
-            </div>
+            {/* Dynamic Content Based on Active Tab */}
+            {activeTab === 'pools' && (
+              <div id="pools">
+                <LiquidityPools />
+              </div>
+            )}
+
+            {activeTab === 'credit' && (
+              <div id="credit">
+                <CreditPools />
+              </div>
+            )}
+
+            {activeTab === 'b2b' && (
+              <div id="b2b">
+                <B2BMarketplace />
+              </div>
+            )}
+
+            {activeTab === 'payment' && (
+              <div id="payment">
+                <PaymentDashboard />
+              </div>
+            )}
           </WalletDetection>
+
+          {/* Swap Modal */}
+          <SwapModal 
+            isOpen={isSwapModalOpen} 
+            onClose={() => setIsSwapModalOpen(false)} 
+          />
         </main>
       </div>
     </>
