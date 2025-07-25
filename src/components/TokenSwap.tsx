@@ -1,4 +1,5 @@
 import React from 'react';
+import { useAccount } from 'wagmi';
 
 interface TokenSwapProps {
   onSwap: (amount: number, from: string, to: string) => void;
@@ -8,8 +9,25 @@ export const TokenSwap: React.FC<TokenSwapProps> = ({ onSwap }) => {
   const [amount, setAmount] = React.useState('');
   const [fromToken, setFromToken] = React.useState('brz');
   const [toToken, setToToken] = React.useState('usdc');
+  const { isConnected } = useAccount();
+
+  const handleSwitch = () => {
+    console.log('Switch clicado - antes:', { fromToken, toToken });
+    const newFromToken = fromToken === 'brz' ? 'usdc' : 'brz';
+    const newToToken = toToken === 'usdc' ? 'brz' : 'usdc';
+    
+    setFromToken(newFromToken);
+    setToToken(newToToken);
+    
+    console.log('Switch clicado - depois:', { fromToken: newFromToken, toToken: newToToken });
+  };
 
   const handleSwap = () => {
+    if (!isConnected) {
+      alert('Por favor, conecte sua carteira primeiro');
+      return;
+    }
+    
     if (amount && !isNaN(Number(amount))) {
       onSwap(Number(amount), fromToken, toToken);
     }
@@ -20,10 +38,7 @@ export const TokenSwap: React.FC<TokenSwapProps> = ({ onSwap }) => {
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold text-black">SWAP USDC/BRZ </h3>
         <button 
-          onClick={() => {
-            setFromToken(fromToken === 'brz' ? 'usdc' : 'brz');
-            setToToken(toToken === 'usdc' ? 'brz' : 'usdc');
-          }}
+          onClick={handleSwitch}
           className="text-[#00C851] hover:text-[#00A841] transition-colors"
         >
           Switch
@@ -62,13 +77,21 @@ export const TokenSwap: React.FC<TokenSwapProps> = ({ onSwap }) => {
         </div>
       </div>
 
-      <button
-        onClick={handleSwap}
-        className="w-full mt-6 py-3 bg-[#00C851] text-white rounded-[10px] hover:bg-[#00A841] transition-colors"
-        disabled={!amount || isNaN(Number(amount))}
-      >
-        Swap
-      </button>
+      <div className="space-y-3">
+        {!isConnected && (
+          <div className="text-sm text-gray-600 text-center p-3 bg-gray-50 rounded-lg">
+            Conecte sua carteira para fazer swap
+          </div>
+        )}
+        
+        <button
+          onClick={handleSwap}
+          className="w-full py-3 bg-[#00C851] text-white rounded-[10px] hover:bg-[#00A841] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+          disabled={!isConnected || !amount || isNaN(Number(amount))}
+        >
+          Swap
+        </button>
+      </div>
     </div>
   );
 };

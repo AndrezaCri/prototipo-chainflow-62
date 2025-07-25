@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { Trash2, Plus, Minus } from 'lucide-react';
+import { Trash2, Plus, Minus, Wallet, CreditCard } from 'lucide-react';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useConfig } from 'wagmi';
+import { parseUnits, formatUnits } from 'viem';
 
 interface CartItem {
   id: string;
@@ -21,6 +23,25 @@ interface CartDrawerProps {
   onRemoveItem: (id: string) => void;
 }
 
+// Endereço do contrato USDC na Base (mainnet)
+const USDC_CONTRACT_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
+// Endereço do contrato PaymentReceiver (substitua pelo endereço real após implantação)
+const PAYMENT_RECEIVER_ADDRESS = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512';
+
+// ABI simplificado do USDC (ERC-20)
+const USDC_ABI = [
+  {
+    name: 'transfer',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'to', type: 'address' },
+      { name: 'amount', type: 'uint256' }
+    ],
+    outputs: [{ name: '', type: 'bool' }]
+  }
+] as const;
+
 export const CartDrawer: React.FC<CartDrawerProps> = ({ 
   isOpen, 
   onClose, 
@@ -28,7 +49,77 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   onUpdateQuantity, 
   onRemoveItem 
 }) => {
+  const [paymentMethod, setPaymentMethod] = useState<'traditional' | 'usdc'>('traditional');
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  
+  const { address, isConnected } = useAccount();
+  const config = useConfig();
+  const { writeContract, data: hash, error, isPending } = useWriteContract();
+  
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = 
+    useWaitForTransactionReceipt({ hash });
+
   const totalValue = items.reduce((sum, item) => sum + item.total, 0);
+  
+  // Taxa de câmbio BRL/USDC (em produção, isso viria de uma API de oráculo)
+  const BRL_TO_USDC_RATE = 0.18; // 1 BRL = 0.18 USDC (aproximadamente)
+  const usdcAmount = totalValue * BRL_TO_USDC_RATE;
+
+  const handleUSDCPayment = async () => {
+    if (!isConnected || !address) {
+      alert('Por favor, conecte sua carteira primeiro');
+      return;
+    }
+
+    try {
+      setIsProcessingPayment(true);
+      
+      // Converter o valor para unidades USDC (6 decimais)
+      const amountInWei = parseUnits(usdcAmount.toFixed(6), 6);
+      
+      await writeContract({
+        address: USDC_CONTRACT_ADDRESS,
+        abi: USDC_ABI,
+        functionName: 'transfer',
+        args: [PAYMENT_RECEIVER_ADDRESS, amountInWei],
+        account: address,
+        chain: config.chains[0],
+      });
+      
+    } catch (error) {
+      console.error('Erro no pagamento USDC:', error);
+      alert('Erro ao processar pagamento. Verifique se você tem USDC suficiente.');
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
+
+  const handleTraditionalPayment = () => {
+    // Simular redirecionamento para gateway de pagamento
+    const paymentData = {
+      amount: totalValue,
+      currency: 'BRL',
+      items: items,
+      timestamp: new Date().toISOString()
+    };
+    
+    // Em produção, isso seria um redirecionamento real para um gateway como PagSeguro, Mercado Pago, etc.
+    const paymentUrl = `https://checkout.exemplo.com/pay?amount=${totalValue}&currency=BRL&reference=${Date.now()}`;
+    
+    // Mostrar modal de confirmação antes do redirecionamento
+    const confirmPayment = confirm(
+      `Você será redirecionado para o pagamento tradicional.\n\nValor: R$ ${totalValue.toFixed(2)}\n\nDeseja continuar?`
+    );
+    
+    if (confirmPayment) {
+      // Simular redirecionamento (em produção seria window.location.href = paymentUrl)
+      alert(`Redirecionando para: ${paymentUrl}\n\n(Em produção, isso abriria o gateway de pagamento)`);
+      
+      // Limpar carrinho após redirecionamento
+      items.forEach(item => onRemoveItem(item.id));
+      onClose();
+    }
+  };
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
@@ -101,13 +192,90 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             <div className="border-t pt-4 space-y-4">
               <div className="flex justify-between items-center text-lg font-semibold">
                 <span>Total Geral:</span>
-                <span>R$ {totalValue.toFixed(2)}</span>
+                <div className="text-right">
+                  <div>R$ {totalValue.toFixed(2)}</div>
+                  <div className="text-sm text-muted-foreground font-normal">
+                    ≈ {usdcAmount.toFixed(6)} USDC
+                  </div>
+                </div>
               </div>
               
+              {/* Seleção do método de pagamento */}
+              <div className="space-y-3">
+                <h4 className="font-medium">Método de Pagamento:</h4>
+                
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant={paymentMethod === 'traditional' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setPaymentMethod('traditional')}
+                    className="flex items-center gap-2"
+                  >
+                    <CreditCard className="h-4 w-4" />
+                    Tradicional
+                  </Button>
+                  
+                  <Button
+                    variant={paymentMethod === 'usdc' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setPaymentMethod('usdc')}
+                    className="flex items-center gap-2"
+                  >
+                    <Wallet className="h-4 w-4" />
+                    USDC (Base)
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Botões de pagamento */}
               <div className="space-y-2">
-                <Button className="w-full" size="lg">
-                  Finalizar Pedido
-                </Button>
+                {paymentMethod === 'usdc' ? (
+                  <>
+                    {!isConnected ? (
+                      <div className="text-sm text-muted-foreground text-center p-2 bg-muted rounded">
+                        Conecte sua carteira para pagar com USDC
+                      </div>
+                    ) : (
+                      <Button 
+                        className="w-full" 
+                        size="lg"
+                        onClick={handleUSDCPayment}
+                        disabled={isProcessingPayment || isPending || isConfirming}
+                      >
+                        {isProcessingPayment || isPending ? (
+                          'Processando...'
+                        ) : isConfirming ? (
+                          'Confirmando...'
+                        ) : isConfirmed ? (
+                          'Pagamento Confirmado!'
+                        ) : (
+                          `Pagar ${usdcAmount.toFixed(6)} USDC`
+                        )}
+                      </Button>
+                    )}
+                    
+                    {error && (
+                      <div className="text-sm text-red-600 text-center p-2 bg-red-50 rounded">
+                        Erro: {error.message}
+                      </div>
+                    )}
+                    
+                    {isConfirmed && (
+                      <div className="text-sm text-green-600 text-center p-2 bg-green-50 rounded">
+                        Pagamento realizado com sucesso!
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <Button 
+                    className="w-full" 
+                    size="lg"
+                    onClick={handleTraditionalPayment}
+                  >
+                    Finalizar Pedido
+                  </Button>
+                )}
+                
                 <Button variant="outline" className="w-full" onClick={onClose}>
                   Continuar Comprando
                 </Button>
