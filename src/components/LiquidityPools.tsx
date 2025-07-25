@@ -74,7 +74,7 @@ export const LiquidityPools: React.FC = () => {
   const pools: Pool[] = [
     {
       id: '1',
-      business: 'Lending Pool 30D',
+      business: 'Credit Pool 30D',
       amount: 50000,
       term: 30,
       score: 8.5,
@@ -84,7 +84,7 @@ export const LiquidityPools: React.FC = () => {
     },
     {
       id: '2',
-      business: 'Lending Pool 60D',
+      business: 'Credit Pool 60D',
       amount: 75000,
       term: 60,
       score: 9.1,
@@ -94,7 +94,7 @@ export const LiquidityPools: React.FC = () => {
     },
     {
       id: '3',
-      business: 'Lending Pool 90D',
+      business: 'Credit Pool 90D',
       amount: 120000,
       term: 90,
       score: 7.8,
@@ -166,10 +166,10 @@ export const LiquidityPools: React.FC = () => {
       </div>
       <div className="text-center mb-12">
         <h2 className="text-[48px] font-bold leading-[57px] text-black mb-4 max-md:text-4xl max-sm:text-3xl">
-          AVAILABLE LENDING POOLS
+          AVAILABLE CREDIT POOLS
         </h2>
         <p className="text-base font-normal text-[#666666] max-w-2xl mx-auto">
-          Invest in lending pools with transparent risk assessment and competitive returns
+          Invest in credit pools with transparent risk assessment and competitive returns
         </p>
         <div className="text-sm font-normal text-[#666666] mt-2">
           {pools.length} pools available
