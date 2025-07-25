@@ -6,6 +6,7 @@ import {
   InvestorPosition,
   PaymentOrder 
 } from '../services/chainflowCredit';
+import { isDemoMode, simulateTransactionDelay, DEMO_CONFIG } from '../config/demoMode';
 
 export interface CreditAnalysisResult {
   approved: boolean;

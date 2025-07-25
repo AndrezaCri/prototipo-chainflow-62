@@ -42,16 +42,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onBuyNow, onA
     console.log('Payment completed:', paymentData);
     
     if (paymentData.paymentMethod === 'cash') {
-      // Pagamento à vista
+      // Pagamento à vista - gerar PIX para o comprador
       toast({
         title: "Pagamento à vista confirmado",
-        description: `Pedido confirmado para finalização.`,
+        description: `PIX gerado: ${paymentData.pixCode}. Realize o pagamento para finalizar.`,
       });
     } else {
       // Pagamento a prazo - ChainFlow Credit
       if (paymentData.creditApproved && paymentData.applicationId) {
         try {
-          // 1. Processar pagamento para o fornecedor
+          // 1. Gerar pagamento PIX para o fornecedor (ChainFlow paga à vista)
           const supplierPayment = await generateSupplierPayment({
             supplierId: `supplier_${product.id}`,
             supplierName: `Fornecedor ${product.category}`,
@@ -63,7 +63,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onBuyNow, onA
           });
 
           if (supplierPayment) {
-            // 2. Gerar cobrança para o comprador (na data de vencimento)
+            // 2. Gerar cobrança PIX para o comprador (na data de vencimento)
             const dueDate = new Date(paymentData.dueDate);
             const buyerCharge = await generateBuyerCharge(
               paymentData.applicationId,
@@ -75,14 +75,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onBuyNow, onA
             if (buyerCharge) {
               toast({
                 title: "Crédito ChainFlow aprovado!",
-                description: `O fornecedor receberá à vista. Você receberá a cobrança em ${dueDate.toLocaleDateString('pt-BR')}.`,
+                description: `O fornecedor receberá à vista. Você receberá a cobrança PIX em ${dueDate.toLocaleDateString('pt-BR')}.`,
               });
             }
           }
         } catch (error) {
           toast({
             title: "Erro no processamento",
-            description: "Ocorreu um erro ao processar os pagamentos.",
+            description: "Ocorreu um erro ao processar os pagamentos PIX.",
             variant: "destructive"
           });
         }
@@ -116,8 +116,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onBuyNow, onA
           </div>
           
           <div className="space-y-2">
-            <div className="text-lg font-bold text-blue-600">
-              À vista: R$ {product.paymentTerms.cash.toFixed(2)}/{product.unit}
+            <div className="text-lg font-bold text-[#c1e428]">
+              Financiamento ChainFlow
+              <span className="text-xs text-gray-500 block">Pague a prazo, fornecedor recebe à vista</span>
             </div>
             <div className="text-sm text-gray-600 space-y-1">
               <div className="flex justify-between">
@@ -141,10 +142,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onBuyNow, onA
               className="w-full bg-[#c1e428] hover:bg-[#a8c523] text-black font-semibold"
               onClick={handleOpenPayment}
             >
-              Comprar
+              Comprar via ChainFlow
             </Button>
             <p className="text-xs text-gray-500 text-center">
-              Pagamento à vista ou financiado pela ChainFlow
+              Financiamento pela ChainFlow - Análise de crédito automática
             </p>
           </div>
         </div>

@@ -7,6 +7,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { useChainFlowCredit } from '@/hooks/useChainFlowCredit';
 import { Building2, CreditCard, Clock, CheckCircle, AlertCircle, TrendingUp, Shield, Zap } from 'lucide-react';
+
 interface Product {
   id: string;
   name: string;
@@ -22,6 +23,7 @@ interface Product {
     days90: number;
   };
 }
+
 interface ChainFlowPaymentProps {
   product: Product;
   quantity: number;
@@ -29,20 +31,24 @@ interface ChainFlowPaymentProps {
   onClose: () => void;
   onPaymentComplete: (paymentData: PaymentData) => void;
 }
+
 interface PaymentData {
   product: Product;
   quantity: number;
   paymentMethod: 'cash' | 'days30' | 'days60' | 'days90';
   totalAmount: number;
   creditApproved?: boolean;
+  pixCode?: string;
   dueDate?: string;
   applicationId?: string;
 }
+
 interface CompanyData {
   name: string;
   cnpj: string;
   monthlyRevenue: number;
 }
+
 export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
   product,
   quantity,
@@ -50,19 +56,18 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
   onClose,
   onPaymentComplete
 }) => {
-  const {
-    toast
-  } = useToast();
-  const {
-    analyzeCreditRequest,
-    createCreditApplication,
+  const { toast } = useToast();
+  const { 
+    analyzeCreditRequest, 
+    createCreditApplication, 
     processSupplierPayment,
     checkCreditEligibility,
     getEstimatedInterestRate,
     calculateCashDiscount,
-    loading
+    loading 
   } = useChainFlowCredit();
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'days30' | 'days60' | 'days90'>('cash');
+  
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'days30' | 'days60' | 'days90'>('days30');
   const [companyData, setCompanyData] = useState<CompanyData>({
     name: '',
     cnpj: '',
@@ -76,33 +81,28 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
     const basePrice = product.paymentTerms[method as keyof typeof product.paymentTerms];
     return basePrice * quantity;
   };
+
   const getDiscountOrInterest = (method: string) => {
     const cashAmount = getPaymentAmount('cash');
     const methodAmount = getPaymentAmount(method);
     const difference = methodAmount - cashAmount;
-    const percentage = difference / cashAmount * 100;
+    const percentage = (difference / cashAmount) * 100;
+    
     if (method === 'cash') {
-      return {
-        type: 'none',
-        value: 0,
-        amount: 0
-      }; // Sem desconto para compradores
+      return { type: 'none', value: 0, amount: 0 }; // Sem desconto para compradores
     }
-    return {
-      type: 'interest',
-      value: percentage,
-      amount: difference
-    };
+    
+    return { type: 'interest', value: percentage, amount: difference };
   };
+
   const handlePaymentMethodChange = (method: string) => {
     setPaymentMethod(method as 'cash' | 'days30' | 'days60' | 'days90');
-    if (method === 'cash') {
-      setStep('confirmation');
-    } else {
-      setStep('company');
-      setCreditAnalysis(null);
-    }
+    
+    // Para pagamentos a prazo, ir para análise de crédito
+    setStep('company');
+    setCreditAnalysis(null);
   };
+
   const handleCompanyDataSubmit = async () => {
     if (!companyData.name || !companyData.cnpj || !companyData.monthlyRevenue) {
       toast({
@@ -112,8 +112,9 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
       });
       return;
     }
-    const orderAmount = getPaymentAmount(paymentMethod);
 
+    const orderAmount = getPaymentAmount(paymentMethod);
+    
     // Verificar elegibilidade
     const eligibility = checkCreditEligibility(companyData.monthlyRevenue, orderAmount);
     if (!eligibility.eligible) {
@@ -124,10 +125,21 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
       });
       return;
     }
+
     setStep('analysis');
+
     try {
       const termDays = parseInt(paymentMethod.replace('days', '')) as 30 | 60 | 90;
-      const analysis = await analyzeCreditRequest(companyData.name, companyData.cnpj, companyData.monthlyRevenue, orderAmount, termDays, `Compra de ${product.name} - ${quantity} ${product.unit}`);
+      
+      const analysis = await analyzeCreditRequest(
+        companyData.name,
+        companyData.cnpj,
+        companyData.monthlyRevenue,
+        orderAmount,
+        termDays,
+        `Compra de ${product.name} - ${quantity} ${product.unit}`
+      );
+      
       if (analysis) {
         setCreditAnalysis(analysis);
         setStep('confirmation');
@@ -141,82 +153,79 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
       setStep('company');
     }
   };
+
   const handleConfirmPayment = async () => {
     const totalAmount = getPaymentAmount(paymentMethod);
-    if (paymentMethod === 'cash') {
-      // Pagamento à vista - comprador paga preço cheio
-      const paymentData: PaymentData = {
-        product,
-        quantity,
-        paymentMethod,
-        totalAmount,
-        // Preço cheio para o comprador
-        creditApproved: true
-      };
-      onPaymentComplete(paymentData);
+    
+    // Pagamento a prazo via ChainFlow Credit
+    if (!creditAnalysis?.approved) {
       toast({
-        title: "Pagamento à vista confirmado",
-        description: `Valor total: ${formatCurrency(totalAmount)}.`
+        title: "Crédito não aprovado",
+        description: "Não foi possível aprovar o crédito para esta compra.",
+        variant: "destructive"
       });
-    } else {
-      // Pagamento a prazo via ChainFlow Credit
-      if (!creditAnalysis?.approved) {
-        toast({
-          title: "Crédito não aprovado",
-          description: "Não foi possível aprovar o crédito para esta compra.",
-          variant: "destructive"
-        });
-        return;
-      }
-      try {
-        const termDays = parseInt(paymentMethod.replace('days', '')) as 30 | 60 | 90;
-
-        // Criar aplicação de crédito
-        const application = await createCreditApplication(companyData.name, companyData.cnpj, companyData.monthlyRevenue, totalAmount, termDays, `Compra de ${product.name} - ${quantity} ${product.unit}`);
-        if (application) {
-          const paymentData: PaymentData = {
-            product,
-            quantity,
-            paymentMethod,
-            totalAmount,
-            creditApproved: true,
-            applicationId: application.id,
-            dueDate: application.dueDate?.toISOString()
-          };
-          onPaymentComplete(paymentData);
-          toast({
-            title: "Crédito ChainFlow aprovado!",
-            description: `O fornecedor receberá à vista. Você pagará em ${termDays} dias com juros de ${creditAnalysis.interestRate}%.`
-          });
-        }
-      } catch (error) {
-        toast({
-          title: "Erro ao processar crédito",
-          description: "Ocorreu um erro ao processar o crédito. Tente novamente.",
-          variant: "destructive"
-        });
-      }
+      return;
     }
+
+    try {
+      const termDays = parseInt(paymentMethod.replace('days', '')) as 30 | 60 | 90;
+      
+      // Criar aplicação de crédito
+      const application = await createCreditApplication(
+        companyData.name,
+        companyData.cnpj,
+        companyData.monthlyRevenue,
+        totalAmount,
+        termDays,
+        `Compra de ${product.name} - ${quantity} ${product.unit}`
+      );
+
+      if (application) {
+        const paymentData: PaymentData = {
+          product,
+          quantity,
+          paymentMethod,
+          totalAmount,
+          creditApproved: true,
+          applicationId: application.id,
+          dueDate: application.dueDate?.toISOString(),
+        };
+
+        onPaymentComplete(paymentData);
+        
+        toast({
+          title: "Crédito ChainFlow aprovado!",
+          description: `O fornecedor receberá à vista. Você pagará em ${termDays} dias com juros de ${creditAnalysis.interestRate}%.`,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Erro ao processar crédito",
+        description: "Ocorreu um erro ao processar o crédito. Tente novamente.",
+        variant: "destructive"
+      });
+    }
+    
     onClose();
     resetForm();
   };
+
   const resetForm = () => {
     setPaymentMethod('cash');
-    setCompanyData({
-      name: '',
-      cnpj: '',
-      monthlyRevenue: 0
-    });
+    setCompanyData({ name: '', cnpj: '', monthlyRevenue: 0 });
     setCreditAnalysis(null);
     setStep('payment');
   };
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(value);
   };
-  return <Dialog open={isOpen} onOpenChange={onClose}>
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -227,7 +236,11 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
 
         {/* Resumo do Produto */}
         <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-          <img src={product.image} alt={product.name} className="w-12 h-12 object-cover rounded" />
+          <img 
+            src={product.image} 
+            alt={product.name}
+            className="w-12 h-12 object-cover rounded"
+          />
           <div className="flex-1">
             <h4 className="font-medium text-sm">{product.name}</h4>
             <p className="text-sm text-gray-600">{quantity} {product.unit}</p>
@@ -235,13 +248,13 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
         </div>
 
         {/* Step 1: Escolha do método de pagamento */}
-        {step === 'payment' && <div className="space-y-4">
+        {step === 'payment' && (
+          <div className="space-y-4">
             <div>
               <Label className="text-base font-medium">Escolha a forma de pagamento:</Label>
             </div>
             
             <RadioGroup value={paymentMethod} onValueChange={handlePaymentMethodChange}>
-
               {/* 30 dias */}
               <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
                 <RadioGroupItem value="days30" id="days30" />
@@ -288,24 +301,28 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
               </div>
             </RadioGroup>
 
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-start gap-2">
-                <Shield className="h-5 w-5 text-blue-600 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-blue-800">Como funciona o ChainFlow Credit:</p>
-                  <ul className="text-sm text-blue-700 mt-1 space-y-1">
-                    <li>• O fornecedor recebe o pagamento à vista</li>
-                    <li>• Você paga para ChainFlow na data de vencimento</li>
-                    
-                    <li>• Liquidez garantida pelos Credit Pools DeFi</li>
-                  </ul>
+            {paymentMethod !== 'cash' && (
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <Shield className="h-5 w-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-blue-800">Como funciona o ChainFlow Credit:</p>
+                    <ul className="text-sm text-blue-700 mt-1 space-y-1">
+                      <li>• O fornecedor recebe à vista via PIX</li>
+                      <li>• Você paga para ChainFlow na data de vencimento</li>
+                      <li>• Análise de crédito automática com IA</li>
+                      <li>• Liquidez garantida pelos Credit Pools DeFi</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>}
+            )}
+          </div>
+        )}
 
         {/* Step 2: Dados da empresa */}
-        {step === 'company' && <div className="space-y-4">
+        {step === 'company' && (
+          <div className="space-y-4">
             <div>
               <Label className="text-base font-medium">Dados da empresa para análise de crédito:</Label>
             </div>
@@ -313,54 +330,97 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
             <div className="space-y-3">
               <div>
                 <Label htmlFor="companyName">Nome da Empresa</Label>
-                <Input id="companyName" value={companyData.name} onChange={e => setCompanyData({
-              ...companyData,
-              name: e.target.value
-            })} placeholder="Ex: Restaurante do João Ltda" />
+                <Input
+                  id="companyName"
+                  value={companyData.name}
+                  onChange={(e) => setCompanyData({...companyData, name: e.target.value})}
+                  placeholder="Ex: Restaurante do João Ltda"
+                />
               </div>
 
               <div>
                 <Label htmlFor="cnpj">CNPJ</Label>
-                <Input id="cnpj" value={companyData.cnpj} onChange={e => setCompanyData({
-              ...companyData,
-              cnpj: e.target.value
-            })} placeholder="00.000.000/0001-00" />
+                <Input
+                  id="cnpj"
+                  value={companyData.cnpj}
+                  onChange={(e) => setCompanyData({...companyData, cnpj: e.target.value})}
+                  placeholder="00.000.000/0001-00"
+                />
               </div>
 
               <div>
                 <Label htmlFor="revenue">Faturamento Mensal (R$)</Label>
-                <Input id="revenue" type="number" value={companyData.monthlyRevenue} onChange={e => setCompanyData({
-              ...companyData,
-              monthlyRevenue: Number(e.target.value)
-            })} placeholder="50000" />
+                <Input
+                  id="revenue"
+                  type="number"
+                  value={companyData.monthlyRevenue}
+                  onChange={(e) => setCompanyData({...companyData, monthlyRevenue: Number(e.target.value)})}
+                  placeholder="50000"
+                />
               </div>
             </div>
 
-            {companyData.monthlyRevenue > 0 && <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+            {companyData.monthlyRevenue > 0 && (
+              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
                 <p className="text-sm text-green-700">
-                  <strong>Taxa estimada:</strong> {getEstimatedInterestRate(companyData.monthlyRevenue, getPaymentAmount(paymentMethod), parseInt(paymentMethod.replace('days', '')) as 30 | 60 | 90)}% para {paymentMethod.replace('days', '')} dias
+                  <strong>Taxa estimada:</strong> {getEstimatedInterestRate(
+                    companyData.monthlyRevenue, 
+                    getPaymentAmount(paymentMethod), 
+                    parseInt(paymentMethod.replace('days', '')) as 30 | 60 | 90
+                  )}% para {paymentMethod.replace('days', '')} dias
                 </p>
-              </div>}
+              </div>
+            )}
 
             <div className="pt-2">
-              <Button onClick={handleCompanyDataSubmit} className="w-full" disabled={loading}>
+              <Button 
+                onClick={handleCompanyDataSubmit} 
+                className="w-full"
+                disabled={loading}
+              >
                 {loading ? 'Analisando...' : 'Analisar Crédito'}
               </Button>
             </div>
-          </div>}
+          </div>
+        )}
 
+        {/* Step 3: Análise de crédito */}
+        {step === 'analysis' && (
+          <div className="space-y-4">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#c1e428] mx-auto mb-4"></div>
+              <h3 className="text-lg font-medium">Analisando seu crédito...</h3>
+              <p className="text-sm text-gray-600 mt-2">
+                Nossa IA está avaliando os dados da sua empresa usando tecnologia blockchain
+              </p>
+              <div className="mt-4 space-y-2 text-sm text-gray-500">
+                <p>✓ Verificando dados da empresa</p>
+                <p>✓ Calculando business score</p>
+                <p>✓ Consultando Credit Pools DeFi</p>
+                <p>✓ Definindo taxa de juros</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Step 4: Confirmação */}
-        {step === 'confirmation' && <div className="space-y-4">
-            {paymentMethod !== 'cash' && creditAnalysis && <div className={`p-4 border rounded-lg ${creditAnalysis.approved ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
+        {step === 'confirmation' && (
+          <div className="space-y-4">
+            {paymentMethod !== 'cash' && creditAnalysis && (
+              <div className={`p-4 border rounded-lg ${creditAnalysis.approved ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
                 <div className="flex items-center gap-2 mb-3">
-                  {creditAnalysis.approved ? <CheckCircle className="h-5 w-5 text-green-500" /> : <AlertCircle className="h-5 w-5 text-red-500" />}
+                  {creditAnalysis.approved ? (
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                  ) : (
+                    <AlertCircle className="h-5 w-5 text-red-500" />
+                  )}
                   <h3 className="font-medium">
                     {creditAnalysis.approved ? 'Crédito Aprovado!' : 'Crédito Negado'}
                   </h3>
                 </div>
                 
-                {creditAnalysis.approved && <div className="grid grid-cols-2 gap-4 text-sm">
+                {creditAnalysis.approved && (
+                  <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <span className="text-gray-600">Business Score:</span>
                       <span className="font-medium ml-2">{creditAnalysis.businessScore}/10</span>
@@ -377,8 +437,10 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
                       <span className="text-gray-600">Valor Aprovado:</span>
                       <span className="font-medium ml-2">{formatCurrency(creditAnalysis.maxAmount || 0)}</span>
                     </div>
-                  </div>}
-              </div>}
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="p-4 bg-gray-50 rounded-lg">
               <h3 className="font-medium mb-3">Resumo do Pagamento:</h3>
@@ -386,32 +448,48 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
                 <div className="flex justify-between">
                   <span>Método:</span>
                   <span className="font-medium">
-                    {paymentMethod === 'cash' ? 'À vista' : `${paymentMethod.replace('days', '')} dias`}
+                    {paymentMethod === 'cash' ? 'À vista (PIX)' : 
+                     `${paymentMethod.replace('days', '')} dias`}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Valor Total:</span>
                   <span className="font-medium">
-                    {paymentMethod === 'cash' ? formatCurrency(getPaymentAmount(paymentMethod) - getDiscountOrInterest(paymentMethod).amount) : formatCurrency(getPaymentAmount(paymentMethod))}
+                    {paymentMethod === 'cash' ? 
+                      formatCurrency(getPaymentAmount(paymentMethod) - getDiscountOrInterest(paymentMethod).amount) :
+                      formatCurrency(getPaymentAmount(paymentMethod))
+                    }
                   </span>
                 </div>
-                {paymentMethod === 'cash' && <div className="flex justify-between text-green-600">
+                {paymentMethod === 'cash' && (
+                  <div className="flex justify-between text-green-600">
                     <span>Desconto:</span>
                     <span className="font-medium">-{formatCurrency(getDiscountOrInterest(paymentMethod).amount)}</span>
-                  </div>}
-                {paymentMethod !== 'cash' && <div className="flex justify-between">
+                  </div>
+                )}
+                {paymentMethod !== 'cash' && (
+                  <div className="flex justify-between">
                     <span>Data de Vencimento:</span>
                     <span className="font-medium">
-                      {new Date(Date.now() + parseInt(paymentMethod.replace('days', '')) * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')}
+                      {new Date(Date.now() + parseInt(paymentMethod.replace('days', '')) * 24 * 60 * 60 * 1000)
+                        .toLocaleDateString('pt-BR')}
                     </span>
-                  </div>}
+                  </div>
+                )}
               </div>
             </div>
 
-            {(!creditAnalysis || creditAnalysis.approved) && <Button onClick={handleConfirmPayment} className="w-full" disabled={loading}>
+            {(!creditAnalysis || creditAnalysis.approved) && (
+              <Button 
+                onClick={handleConfirmPayment} 
+                className="w-full"
+                disabled={loading}
+              >
                 {loading ? 'Processando...' : 'Confirmar Pagamento'}
-              </Button>}
-          </div>}
+              </Button>
+            )}
+          </div>
+        )}
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
@@ -419,5 +497,7 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
           </Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog>;
+    </Dialog>
+  );
 };
+
