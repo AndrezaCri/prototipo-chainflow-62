@@ -1,0 +1,373 @@
+import React, { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ArrowUpDown, RefreshCw, TrendingUp, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { usdcBrzSwapService, SwapQuote, SwapTransaction } from '@/services/usdcBrzSwap';
+import { useAccount, usePublicClient } from 'wagmi';
+
+interface SwapModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
+  const { toast } = useToast();
+  const { address, isConnected } = useAccount();
+  const publicClient = usePublicClient();
+
+  const [tokenIn, setTokenIn] = useState<'USDC' | 'BRZ'>('USDC');
+  const [tokenOut, setTokenOut] = useState<'USDC' | 'BRZ'>('BRZ');
+  const [amountIn, setAmountIn] = useState('');
+  const [amountOut, setAmountOut] = useState('');
+  const [quote, setQuote] = useState<SwapQuote | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [swapping, setSwapping] = useState(false);
+  const [balanceIn, setBalanceIn] = useState('0');
+  const [balanceOut, setBalanceOut] = useState('0');
+  const [exchangeRate, setExchangeRate] = useState(5.2);
+  const [slippage, setSlippage] = useState(0.5);
+
+  // Inicializar serviço quando conectar carteira
+  useEffect(() => {
+    if (isConnected && publicClient) {
+      // Para desenvolvimento, usar simulação
+      loadBalances();
+      loadExchangeRate();
+    }
+  }, [isConnected, publicClient]);
+
+  // Obter cotação quando amount muda
+  useEffect(() => {
+    if (amountIn && parseFloat(amountIn) > 0) {
+      getQuote();
+    } else {
+      setAmountOut('');
+      setQuote(null);
+    }
+  }, [amountIn, tokenIn, tokenOut]);
+
+  const loadBalances = async () => {
+    try {
+      const [usdcBalance, brzBalance] = await Promise.all([
+        usdcBrzSwapService.getTokenBalance('USDC'),
+        usdcBrzSwapService.getTokenBalance('BRZ')
+      ]);
+      
+      if (tokenIn === 'USDC') {
+        setBalanceIn(usdcBalance);
+        setBalanceOut(brzBalance);
+      } else {
+        setBalanceIn(brzBalance);
+        setBalanceOut(usdcBalance);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar saldos:', error);
+    }
+  };
+
+  const loadExchangeRate = async () => {
+    try {
+      const rate = await usdcBrzSwapService.getCurrentExchangeRate();
+      setExchangeRate(rate);
+    } catch (error) {
+      console.error('Erro ao carregar taxa de câmbio:', error);
+    }
+  };
+
+  const getQuote = async () => {
+    if (!amountIn || parseFloat(amountIn) <= 0) return;
+    
+    setLoading(true);
+    try {
+      const swapQuote = await usdcBrzSwapService.getSwapQuote(amountIn, tokenIn, tokenOut);
+      setQuote(swapQuote);
+      setAmountOut(swapQuote.amountOut);
+    } catch (error) {
+      console.error('Erro ao obter cotação:', error);
+      toast({
+        title: "Erro na cotação",
+        description: "Não foi possível obter a cotação atual. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSwapTokens = () => {
+    const newTokenIn = tokenOut;
+    const newTokenOut = tokenIn;
+    
+    setTokenIn(newTokenIn);
+    setTokenOut(newTokenOut);
+    setAmountIn(amountOut);
+    setAmountOut('');
+    
+    // Trocar saldos
+    const tempBalance = balanceIn;
+    setBalanceIn(balanceOut);
+    setBalanceOut(tempBalance);
+  };
+
+  const handleMaxAmount = () => {
+    setAmountIn(balanceIn);
+  };
+
+  const executeSwap = async () => {
+    if (!isConnected) {
+      toast({
+        title: "Carteira não conectada",
+        description: "Conecte sua carteira para realizar o swap.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!quote || !amountIn) {
+      toast({
+        title: "Dados inválidos",
+        description: "Insira um valor válido para o swap.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (parseFloat(amountIn) > parseFloat(balanceIn)) {
+      toast({
+        title: "Saldo insuficiente",
+        description: `Você não possui ${tokenIn} suficiente para este swap.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setSwapping(true);
+    try {
+      const transaction = await usdcBrzSwapService.executeSwap(
+        amountIn,
+        tokenIn,
+        tokenOut,
+        slippage
+      );
+
+      // Salvar transação no histórico
+      usdcBrzSwapService.saveSwapTransaction(transaction);
+
+      toast({
+        title: "Swap realizado com sucesso!",
+        description: `Trocou ${amountIn} ${tokenIn} por ${amountOut} ${tokenOut}`,
+      });
+
+      // Atualizar saldos
+      await loadBalances();
+      
+      // Limpar formulário
+      setAmountIn('');
+      setAmountOut('');
+      setQuote(null);
+      
+    } catch (error) {
+      console.error('Erro no swap:', error);
+      toast({
+        title: "Erro no swap",
+        description: "Ocorreu um erro ao executar o swap. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setSwapping(false);
+    }
+  };
+
+  const formatCurrency = (value: string, currency: string) => {
+    const num = parseFloat(value);
+    if (isNaN(num)) return '0';
+    
+    if (currency === 'BRZ') {
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      }).format(num);
+    } else {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD'
+      }).format(num);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-[#c1e428]" />
+            Swap USDC ⇄ BRZ
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          {/* Taxa de câmbio atual */}
+          <div className="p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-600">Taxa atual:</span>
+              <span className="font-medium">1 USDC = {exchangeRate.toFixed(2)} BRZ</span>
+            </div>
+          </div>
+
+          {/* Token de entrada */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label>De</Label>
+              <span className="text-sm text-gray-600">
+                Saldo: {parseFloat(balanceIn).toFixed(tokenIn === 'USDC' ? 2 : 2)} {tokenIn}
+              </span>
+            </div>
+            
+            <div className="flex gap-2">
+              <div className="flex-1 relative">
+                <Input
+                  type="number"
+                  placeholder="0.00"
+                  value={amountIn}
+                  onChange={(e) => setAmountIn(e.target.value)}
+                  className="pr-16"
+                />
+                <button
+                  onClick={handleMaxAmount}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-[#c1e428] hover:text-[#a8c424] font-medium"
+                >
+                  MAX
+                </button>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-md min-w-[80px]">
+                <span className="font-medium">{tokenIn}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Botão de troca */}
+          <div className="flex justify-center">
+            <button
+              onClick={handleSwapTokens}
+              className="p-2 rounded-full border-2 border-gray-200 hover:border-[#c1e428] transition-colors"
+            >
+              <ArrowUpDown className="h-4 w-4" />
+            </button>
+          </div>
+
+          {/* Token de saída */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label>Para</Label>
+              <span className="text-sm text-gray-600">
+                Saldo: {parseFloat(balanceOut).toFixed(tokenOut === 'USDC' ? 2 : 2)} {tokenOut}
+              </span>
+            </div>
+            
+            <div className="flex gap-2">
+              <div className="flex-1 relative">
+                <Input
+                  type="number"
+                  placeholder="0.00"
+                  value={amountOut}
+                  readOnly
+                  className="bg-gray-50"
+                />
+                {loading && (
+                  <RefreshCw className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-gray-400" />
+                )}
+              </div>
+              <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-md min-w-[80px]">
+                <span className="font-medium">{tokenOut}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Detalhes da cotação */}
+          {quote && (
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Taxa de câmbio:</span>
+                <span className="font-medium">1 {tokenIn} = {quote.exchangeRate.toFixed(4)} {tokenOut}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Taxa da rede:</span>
+                <span className="font-medium">{quote.fee}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Impacto no preço:</span>
+                <span className="font-medium text-green-600">~{quote.priceImpact}%</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Slippage máximo:</span>
+                <span className="font-medium">{slippage}%</span>
+              </div>
+            </div>
+          )}
+
+          {/* Configuração de slippage */}
+          <div className="space-y-2">
+            <Label className="text-sm">Tolerância ao slippage (%)</Label>
+            <div className="flex gap-2">
+              {[0.1, 0.5, 1.0].map((value) => (
+                <button
+                  key={value}
+                  onClick={() => setSlippage(value)}
+                  className={`px-3 py-1 text-sm rounded ${
+                    slippage === value
+                      ? 'bg-[#c1e428] text-black'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {value}%
+                </button>
+              ))}
+              <Input
+                type="number"
+                step="0.1"
+                min="0.1"
+                max="50"
+                value={slippage}
+                onChange={(e) => setSlippage(parseFloat(e.target.value) || 0.5)}
+                className="w-20 text-sm"
+              />
+            </div>
+          </div>
+
+          {/* Botão de swap */}
+          <Button
+            onClick={executeSwap}
+            disabled={!isConnected || !quote || swapping || parseFloat(amountIn) <= 0}
+            className="w-full bg-[#c1e428] hover:bg-[#a8c424] text-black font-medium"
+          >
+            {!isConnected ? (
+              'Conecte sua carteira'
+            ) : swapping ? (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                Executando swap...
+              </>
+            ) : (
+              `Trocar ${tokenIn} por ${tokenOut}`
+            )}
+          </Button>
+
+          {/* Aviso sobre testnet */}
+          <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-start gap-2">
+              <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5" />
+              <div className="text-sm text-yellow-800">
+                <p className="font-medium">Testnet Base Sepolia</p>
+                <p>Este swap utiliza tokens de teste. Use apenas para demonstração.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+

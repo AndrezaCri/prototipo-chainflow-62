@@ -1,10 +1,8 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { ChainFlowPayment } from './ChainFlowPayment';
 import { usePixPayments } from '@/hooks/usePixPayments';
-
 interface Product {
   id: string;
   name: string;
@@ -20,32 +18,36 @@ interface Product {
     days90: number;
   };
 }
-
 interface ProductCardProps {
   product: Product;
   onBuyNow: (product: Product) => void;
   onAddToCart: (product: Product, quantity: number) => void;
 }
-
-export const ProductCard: React.FC<ProductCardProps> = ({ product, onBuyNow, onAddToCart }) => {
-  const { toast } = useToast();
-  const { generateSupplierPayment, generateBuyerCharge } = usePixPayments();
+export const ProductCard: React.FC<ProductCardProps> = ({
+  product,
+  onBuyNow,
+  onAddToCart
+}) => {
+  const {
+    toast
+  } = useToast();
+  const {
+    generateSupplierPayment,
+    generateBuyerCharge
+  } = usePixPayments();
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [quantity, setQuantity] = useState(product.minOrder);
-
   const handleOpenPayment = () => {
     setQuantity(product.minOrder);
     setIsPaymentOpen(true);
   };
-
   const handlePaymentComplete = async (paymentData: any) => {
     console.log('Payment completed:', paymentData);
-    
     if (paymentData.paymentMethod === 'cash') {
       // Pagamento à vista - gerar PIX para o comprador
       toast({
         title: "Pagamento à vista confirmado",
-        description: `PIX gerado: ${paymentData.pixCode}. Realize o pagamento para finalizar.`,
+        description: `PIX gerado: ${paymentData.pixCode}. Realize o pagamento para finalizar.`
       });
     } else {
       // Pagamento a prazo - ChainFlow Credit
@@ -61,21 +63,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onBuyNow, onA
             applicationId: paymentData.applicationId,
             productDescription: `${product.name} - ${quantity} ${product.unit}`
           });
-
           if (supplierPayment) {
             // 2. Gerar cobrança PIX para o comprador (na data de vencimento)
             const dueDate = new Date(paymentData.dueDate);
-            const buyerCharge = await generateBuyerCharge(
-              paymentData.applicationId,
-              '98.765.432/0001-10', // CNPJ do comprador (seria obtido do formulário)
-              paymentData.totalAmount,
-              dueDate
-            );
-
+            const buyerCharge = await generateBuyerCharge(paymentData.applicationId, '98.765.432/0001-10',
+            // CNPJ do comprador (seria obtido do formulário)
+            paymentData.totalAmount, dueDate);
             if (buyerCharge) {
               toast({
                 title: "Crédito ChainFlow aprovado!",
-                description: `O fornecedor receberá à vista. Você receberá a cobrança PIX em ${dueDate.toLocaleDateString('pt-BR')}.`,
+                description: `O fornecedor receberá à vista. Você receberá a cobrança PIX em ${dueDate.toLocaleDateString('pt-BR')}.`
               });
             }
           }
@@ -88,7 +85,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onBuyNow, onA
         }
       }
     }
-    
+
     // Adicionar ao carrinho ou processar compra
     onAddToCart(product, quantity);
   };
@@ -97,15 +94,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onBuyNow, onA
   const fullPrice = product.price; // Preço que o comprador paga
   const supplierReceives = fullPrice * 0.95; // Fornecedor recebe 95% (ChainFlow fica com 5%)
 
-  return (
-    <>
+  return <>
       <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
         <div className="aspect-square bg-gray-100 rounded-lg mb-4 overflow-hidden">
-          <img 
-            src={product.image} 
-            alt={product.name}
-            className="w-full h-full object-cover"
-          />
+          <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
         </div>
         
         <div className="space-y-3">
@@ -137,13 +129,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onBuyNow, onA
           </div>
           
           <div className="pt-2 space-y-2">
-            <Button 
-              size="sm" 
-              className="w-full bg-[#c1e428] hover:bg-[#a8c523] text-black font-semibold"
-              onClick={handleOpenPayment}
-            >
-              Comprar via ChainFlow
-            </Button>
+            <Button size="sm" className="w-full bg-[#c1e428] hover:bg-[#a8c523] text-black font-semibold" onClick={handleOpenPayment}>Comprar </Button>
             <p className="text-xs text-gray-500 text-center">
               Financiamento pela ChainFlow - Análise de crédito automática
             </p>
@@ -151,14 +137,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onBuyNow, onA
         </div>
       </div>
 
-      <ChainFlowPayment
-        product={product}
-        quantity={quantity}
-        isOpen={isPaymentOpen}
-        onClose={() => setIsPaymentOpen(false)}
-        onPaymentComplete={handlePaymentComplete}
-      />
-    </>
-  );
+      <ChainFlowPayment product={product} quantity={quantity} isOpen={isPaymentOpen} onClose={() => setIsPaymentOpen(false)} onPaymentComplete={handlePaymentComplete} />
+    </>;
 };
-
