@@ -30,15 +30,6 @@ const DeFiInvestor = () => {
           </Link>
           
           <nav className="hidden md:flex items-center gap-6">
-            <Button 
-              onClick={() => setIsSwapModalOpen(true)}
-              variant="outline"
-              size="sm"
-              className="ml-2"
-            >
-              <ArrowLeftRight className="w-4 h-4 mr-2" />
-              SWAP
-            </Button>
           </nav>
 
           <ConnectButton />
@@ -120,6 +111,38 @@ const DeFiInvestor = () => {
             {/* Portfolio Section - Always visible */}
             <div className="mb-16" id="portfolio">
               <PortfolioDashboard />
+            </div>
+
+            {/* SWAP Interface */}
+            <div className="mb-8 bg-white rounded-lg shadow-sm border p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold">SWAP USDC ⇄ BRZ</h2>
+                <div className="text-sm text-muted-foreground">Base Sepolia</div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                <div className="space-y-3">
+                  <div className="text-sm text-muted-foreground">De</div>
+                  <div className="text-3xl font-bold">0.0</div>
+                  <div className="text-lg text-muted-foreground">BRZ</div>
+                </div>
+                
+                <div className="flex justify-center">
+                  <Button 
+                    onClick={() => setIsSwapModalOpen(true)}
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3"
+                  >
+                    <ArrowLeftRight className="w-4 h-4 mr-2" />
+                    Swap
+                  </Button>
+                </div>
+                
+                <div className="space-y-3 md:order-last">
+                  <div className="text-sm text-muted-foreground">Para</div>
+                  <div className="text-3xl font-bold">0,0</div>
+                  <div className="text-lg text-muted-foreground">USDC</div>
+                </div>
+              </div>
             </div>
 
             {/* Main Content */}
