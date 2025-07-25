@@ -312,6 +312,12 @@ class UsdcBrzSwapService {
   async getTokenBalance(tokenSymbol: 'USDC' | 'BRZ'): Promise<string> {
     this.ensureInitialized();
     
+    // Verificar se há saldo de teste salvo localmente
+    const testBalance = localStorage.getItem(`testnet_${tokenSymbol.toLowerCase()}_balance`);
+    if (testBalance) {
+      return testBalance;
+    }
+    
     const tokenAddress = tokenSymbol === 'USDC' ? USDC_ADDRESS : BRZ_ADDRESS;
     const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider!);
     const userAddress = await this.signer!.getAddress();
@@ -321,9 +327,25 @@ class UsdcBrzSwapService {
       return ethers.utils.formatUnits(balance, tokenSymbol === 'USDC' ? 6 : 18);
     } catch (error) {
       console.error(`Erro ao obter saldo de ${tokenSymbol}:`, error);
-      // Retornar saldo simulado para desenvolvimento
-      return tokenSymbol === 'USDC' ? '1000.00' : '5200.00';
+      // Retornar zero para forçar o usuário a usar o faucet
+      return '0.00';
     }
+  }
+
+  /**
+   * Adiciona tokens de teste à carteira simulada
+   */
+  addTestTokens(usdcAmount: string = '1000.00', brzAmount: string = '5200.00'): void {
+    localStorage.setItem('testnet_usdc_balance', usdcAmount);
+    localStorage.setItem('testnet_brz_balance', brzAmount);
+  }
+
+  /**
+   * Remove saldo de tokens de teste
+   */
+  clearTestTokens(): void {
+    localStorage.removeItem('testnet_usdc_balance');
+    localStorage.removeItem('testnet_brz_balance');
   }
 
   /**

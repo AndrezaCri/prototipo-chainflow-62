@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowUpDown } from 'lucide-react';
+import { ArrowUpDown, Coins } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { usdcBrzSwapService } from '@/services/usdcBrzSwap';
 import { useSwapService } from '@/hooks/useSwapService';
+import { TestTokenFaucet } from './TestTokenFaucet';
 
 interface TokenSwapProps {
   onSwap: (amount: number, from: string, to: string) => void;
@@ -23,6 +24,7 @@ export const TokenSwap: React.FC<TokenSwapProps> = ({ onSwap }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [balanceFrom, setBalanceFrom] = useState('0');
   const [balanceTo, setBalanceTo] = useState('0');
+  const [showFaucet, setShowFaucet] = useState(false);
 
   // Atualizar saldos quando conectar e serviço estiver inicializado
   useEffect(() => {
@@ -30,6 +32,12 @@ export const TokenSwap: React.FC<TokenSwapProps> = ({ onSwap }) => {
       loadBalances();
     }
   }, [isConnected, isInitialized, fromToken, toToken]);
+
+  // Verificar se precisa mostrar o faucet
+  useEffect(() => {
+    const hasZeroBalance = parseFloat(balanceFrom) === 0 && parseFloat(balanceTo) === 0;
+    setShowFaucet(hasZeroBalance && isConnected && isInitialized);
+  }, [balanceFrom, balanceTo, isConnected, isInitialized]);
 
   // Obter cotação quando amount muda
   useEffect(() => {
@@ -158,7 +166,8 @@ export const TokenSwap: React.FC<TokenSwapProps> = ({ onSwap }) => {
       if (error.code === 4001) {
         errorMessage = "Transação cancelada pelo usuário.";
       } else if (error.message?.includes('insufficient')) {
-        errorMessage = "Saldo insuficiente ou erro de rede.";
+        errorMessage = "Saldo insuficiente. Use o faucet para obter tokens de teste.";
+        setShowFaucet(true);
       } else if (error.message?.includes('denied')) {
         errorMessage = "Acesso negado pela carteira.";
       }
@@ -172,6 +181,20 @@ export const TokenSwap: React.FC<TokenSwapProps> = ({ onSwap }) => {
       setIsLoading(false);
     }
   };
+
+  const handleTokensAdded = async () => {
+    setShowFaucet(false);
+    await loadBalances();
+    toast({
+      title: "Tokens adicionados!",
+      description: "Você agora pode realizar swaps na testnet.",
+    });
+  };
+
+  if (showFaucet) {
+    return <TestTokenFaucet onTokensAdded={handleTokensAdded} />;
+  }
+
   return (
     <div className="bg-card border rounded-lg p-6 max-w-md mx-auto">
       <div className="space-y-4">
@@ -271,6 +294,18 @@ export const TokenSwap: React.FC<TokenSwapProps> = ({ onSwap }) => {
             `Trocar ${fromToken} por ${toToken}`
           )}
         </Button>
+
+        {/* Botão de Faucet se necessário */}
+        {(parseFloat(balanceFrom) === 0 || parseFloat(balanceTo) === 0) && isConnected && (
+          <Button 
+            onClick={() => setShowFaucet(true)}
+            variant="outline"
+            className="w-full"
+          >
+            <Coins className="mr-2 h-4 w-4" />
+            Obter Tokens de Teste
+          </Button>
+        )}
 
         {/* Aviso sobre testnet */}
         {isConnected && (
