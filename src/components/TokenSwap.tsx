@@ -1,96 +1,318 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ArrowUpDown, Coins } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { usdcBrzSwapService } from '@/services/usdcBrzSwap';
+import { useSwapService } from '@/hooks/useSwapService';
+import { TestTokenFaucet } from './TestTokenFaucet';
 
 interface TokenSwapProps {
   onSwap: (amount: number, from: string, to: string) => void;
 }
 
 export const TokenSwap: React.FC<TokenSwapProps> = ({ onSwap }) => {
-  const [amount, setAmount] = React.useState('');
-  const [fromToken, setFromToken] = React.useState('brz');
-  const [toToken, setToToken] = React.useState('usdc');
-  const { isConnected } = useAccount();
+  const { toast } = useToast();
+  const { address, isConnected } = useAccount();
+  const { isInitialized } = useSwapService();
+  
+  const [amount, setAmount] = useState('');
+  const [fromToken, setFromToken] = useState<'USDC' | 'BRZ'>('USDC');
+  const [toToken, setToToken] = useState<'USDC' | 'BRZ'>('BRZ');
+  const [estimatedOutput, setEstimatedOutput] = useState('0.0');
+  const [isLoading, setIsLoading] = useState(false);
+  const [balanceFrom, setBalanceFrom] = useState('0');
+  const [balanceTo, setBalanceTo] = useState('0');
+  const [showFaucet, setShowFaucet] = useState(false);
+
+  // Atualizar saldos quando conectar e serviço estiver inicializado
+  useEffect(() => {
+    if (isConnected && isInitialized) {
+      loadBalances();
+    }
+  }, [isConnected, isInitialized, fromToken, toToken]);
+
+  // Verificar se precisa mostrar o faucet
+  useEffect(() => {
+    const hasZeroBalance = parseFloat(balanceFrom) === 0 && parseFloat(balanceTo) === 0;
+    setShowFaucet(hasZeroBalance && isConnected && isInitialized);
+  }, [balanceFrom, balanceTo, isConnected, isInitialized]);
+
+  // Obter cotação quando amount muda
+  useEffect(() => {
+    if (amount && parseFloat(amount) > 0) {
+      getQuote();
+    } else {
+      setEstimatedOutput('0.0');
+    }
+  }, [amount, fromToken, toToken]);
+
+  const loadBalances = async () => {
+    try {
+      const [fromBalance, toBalance] = await Promise.all([
+        usdcBrzSwapService.getTokenBalance(fromToken),
+        usdcBrzSwapService.getTokenBalance(toToken)
+      ]);
+      setBalanceFrom(fromBalance);
+      setBalanceTo(toBalance);
+    } catch (error) {
+      console.error('Erro ao carregar saldos:', error);
+    }
+  };
+
+  const getQuote = async () => {
+    if (!amount || parseFloat(amount) <= 0) return;
+    
+    setIsLoading(true);
+    try {
+      const quote = await usdcBrzSwapService.getSwapQuote(amount, fromToken, toToken);
+      setEstimatedOutput(quote.amountOut);
+    } catch (error) {
+      console.error('Erro ao obter cotação:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSwitch = () => {
-    console.log('Switch clicado - antes:', { fromToken, toToken });
-    const newFromToken = fromToken === 'brz' ? 'usdc' : 'brz';
-    const newToToken = toToken === 'usdc' ? 'brz' : 'usdc';
+    const newFromToken = fromToken === 'USDC' ? 'BRZ' : 'USDC';
+    const newToToken = toToken === 'BRZ' ? 'USDC' : 'BRZ';
     
     setFromToken(newFromToken);
     setToToken(newToToken);
+    setAmount(estimatedOutput);
+    setEstimatedOutput('');
     
-    console.log('Switch clicado - depois:', { fromToken: newFromToken, toToken: newToToken });
+    // Trocar saldos
+    const tempBalance = balanceFrom;
+    setBalanceFrom(balanceTo);
+    setBalanceTo(tempBalance);
   };
 
-  const handleSwap = () => {
+  const handleSwap = async () => {
     if (!isConnected) {
-      alert('Por favor, conecte sua carteira primeiro');
+      toast({
+        title: "Carteira não conectada",
+        description: "Conecte sua carteira para realizar o swap.",
+        variant: "destructive"
+      });
       return;
     }
-    
-    if (amount && !isNaN(Number(amount))) {
-      onSwap(Number(amount), fromToken, toToken);
+
+    if (!amount || parseFloat(amount) <= 0) {
+      toast({
+        title: "Valor inválido",
+        description: "Insira um valor válido para o swap.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (parseFloat(amount) > parseFloat(balanceFrom)) {
+      toast({
+        title: "Saldo insuficiente",
+        description: `Você não possui ${fromToken} suficiente para este swap.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Mostrar toast informativo sobre abertura da carteira
+      toast({
+        title: "Preparando transação...",
+        description: "Sua carteira irá abrir para confirmar as transações necessárias.",
+      });
+
+      // Executar swap - isso abrirá a carteira para aprovação e transação
+      const transaction = await usdcBrzSwapService.executeSwap(
+        amount,
+        fromToken,
+        toToken,
+        0.5 // 0.5% slippage
+      );
+
+      // Salvar transação no histórico
+      usdcBrzSwapService.saveSwapTransaction(transaction);
+
+      toast({
+        title: "Transação enviada!",
+        description: `Hash: ${transaction.hash.slice(0, 10)}... - Aguardando confirmação.`,
+      });
+
+      // Aguardar um pouco antes de atualizar saldos
+      setTimeout(async () => {
+        await loadBalances();
+        toast({
+          title: "Swap confirmado!",
+          description: `Trocou ${amount} ${fromToken} por ${estimatedOutput} ${toToken}`,
+        });
+      }, 3000);
+
+      // Chamar callback original para compatibilidade
+      onSwap(Number(amount), fromToken.toLowerCase(), toToken.toLowerCase());
+
+      // Limpar form
+      setAmount('');
+      setEstimatedOutput('0.0');
+
+    } catch (error: any) {
+      console.error('Erro no swap:', error);
+      
+      let errorMessage = "Ocorreu um erro ao executar o swap. Tente novamente.";
+      
+      if (error.code === 4001) {
+        errorMessage = "Transação cancelada pelo usuário.";
+      } else if (error.message?.includes('insufficient')) {
+        errorMessage = "Saldo insuficiente. Use o faucet para obter tokens de teste.";
+        setShowFaucet(true);
+      } else if (error.message?.includes('denied')) {
+        errorMessage = "Acesso negado pela carteira.";
+      }
+
+      toast({
+        title: "Erro no swap",
+        description: errorMessage,
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  const handleTokensAdded = async () => {
+    setShowFaucet(false);
+    await loadBalances();
+    toast({
+      title: "Tokens adicionados!",
+      description: "Você agora pode realizar swaps na testnet.",
+    });
+  };
+
+  if (showFaucet) {
+    return <TestTokenFaucet onTokensAdded={handleTokensAdded} />;
+  }
+
   return (
-    <div className="bg-white p-8 rounded-[20px] border border-[#f0f0f0]">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-bold text-black">SWAP USDC/BRZ </h3>
-        <button 
-          onClick={handleSwitch}
-          className="text-[#00C851] hover:text-[#00A841] transition-colors"
-        >
-          Switch
-        </button>
-      </div>
+    <div className="bg-card border rounded-lg p-6 max-w-md mx-auto">
+      <div className="space-y-4">
+        {/* Header com saldos */}
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold">Swap Tokens</h3>
+          {isConnected && (
+            <div className="text-xs text-muted-foreground">
+              Saldos: {parseFloat(balanceFrom).toFixed(2)} {fromToken} | {parseFloat(balanceTo).toFixed(2)} {toToken}
+            </div>
+          )}
+        </div>
 
-      <div className="grid grid-cols-2 gap-6">
-        <div>
-          <div className="relative">
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="w-full px-4 py-3 rounded-[10px] border border-[#f0f0f0] focus:outline-none focus:ring-2 focus:ring-[#00C851]"
-              placeholder="0.0"
-            />
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[#666666]">
-              {fromToken.toUpperCase()}
+        {/* Token de entrada */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">De</span>
+            <span className="text-xs text-muted-foreground">
+              Saldo: {parseFloat(balanceFrom).toFixed(2)}
+            </span>
+          </div>
+          
+          <div className="flex gap-3 items-center">
+            <div className="flex-1">
+              <Input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="0.0"
+                className="text-xl h-12 bg-background"
+                disabled={isLoading}
+              />
+            </div>
+            <div className="bg-primary/10 text-primary px-3 py-2 rounded-md font-medium min-w-[70px] text-center">
+              {fromToken}
             </div>
           </div>
         </div>
-        
-        <div>
-          <div className="relative">
-            <input
-              type="number"
-              disabled
-              value="0.0"
-              className="w-full px-4 py-3 rounded-[10px] border border-[#f0f0f0] focus:outline-none focus:ring-2 focus:ring-[#00C851] bg-[#f8f8f8]"
-              placeholder="0.0"
-            />
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[#666666]">
-              {toToken.toUpperCase()}
+
+        {/* Botão de troca */}
+        <div className="flex justify-center py-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSwitch}
+            disabled={isLoading}
+            className="rounded-full p-2 hover:bg-accent"
+          >
+            <ArrowUpDown className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Token de saída */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">Para</span>
+            <span className="text-xs text-muted-foreground">
+              Saldo: {parseFloat(balanceTo).toFixed(2)}
+            </span>
+          </div>
+          
+          <div className="flex gap-3 items-center">
+            <div className="flex-1">
+              <Input
+                type="text"
+                value={isLoading ? 'Calculando...' : estimatedOutput}
+                readOnly
+                placeholder="0.0"
+                className="text-xl h-12 bg-muted"
+              />
+            </div>
+            <div className="bg-primary/10 text-primary px-3 py-2 rounded-md font-medium min-w-[70px] text-center">
+              {toToken}
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="space-y-3">
-        {!isConnected && (
-          <div className="text-sm text-gray-600 text-center p-3 bg-gray-50 rounded-lg">
-            Conecte sua carteira para fazer swap
+        {/* Taxa de câmbio */}
+        {estimatedOutput !== '0.0' && !isLoading && (
+          <div className="text-center text-sm text-muted-foreground bg-muted p-3 rounded-lg">
+            1 {fromToken} ≈ {(parseFloat(estimatedOutput) / parseFloat(amount || '1')).toFixed(4)} {toToken}
           </div>
         )}
-        
-        <button
+
+        {/* Botão de swap */}
+        <Button
           onClick={handleSwap}
-          className="w-full py-3 bg-[#00C851] text-white rounded-[10px] hover:bg-[#00A841] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-          disabled={!isConnected || !amount || isNaN(Number(amount))}
+          disabled={!isConnected || !amount || parseFloat(amount) <= 0 || isLoading}
+          className="w-full h-12 text-lg font-semibold"
+          size="lg"
         >
-          Swap
-        </button>
+          {!isConnected ? (
+            'Conecte sua carteira'
+          ) : isLoading ? (
+            'Processando...'
+          ) : (
+            `Trocar ${fromToken} por ${toToken}`
+          )}
+        </Button>
+
+        {/* Botão de Faucet se necessário */}
+        {(parseFloat(balanceFrom) === 0 || parseFloat(balanceTo) === 0) && isConnected && (
+          <Button 
+            onClick={() => setShowFaucet(true)}
+            variant="outline"
+            className="w-full"
+          >
+            <Coins className="mr-2 h-4 w-4" />
+            Obter Tokens de Teste
+          </Button>
+        )}
+
+        {/* Aviso sobre testnet */}
+        {isConnected && (
+          <div className="text-xs text-center text-muted-foreground bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded border border-yellow-200 dark:border-yellow-800">
+            ⚠️ Testnet Base Sepolia - Use apenas tokens de teste
+          </div>
+        )}
       </div>
     </div>
   );

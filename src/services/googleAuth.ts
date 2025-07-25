@@ -1,6 +1,6 @@
 // Google OAuth Configuration
-const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || 'your-google-client-id';
-const GOOGLE_REDIRECT_URI = process.env.REACT_APP_GOOGLE_REDIRECT_URI || 'http://localhost:8080/auth/google/callback';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '281508231912-sk4kenoled17i1udfr44pf1rsipa8c53.apps.googleusercontent.com';
+const GOOGLE_REDIRECT_URI = import.meta.env.VITE_GOOGLE_REDIRECT_URI || 'https://311193ea-13fe-497c-abe1-e419b92bc1af.lovableproject.com/auth/google/callback';
 
 export interface GoogleUser {
   id: string;
@@ -94,7 +94,7 @@ class GoogleAuthService {
     
     const body = new URLSearchParams({
       client_id: this.clientId,
-      client_secret: process.env.REACT_APP_GOOGLE_CLIENT_SECRET || '',
+      client_secret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET || '',
       code: code,
       grant_type: 'authorization_code',
       redirect_uri: this.redirectUri,
