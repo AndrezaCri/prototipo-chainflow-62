@@ -46,25 +46,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setAuthMethod('google');
     
     try {
-      // Verificar se há client ID configurado
-      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '281508231912-39ssbnvq23k7e73dbpct62rjttj1tksg.apps.googleusercontent.com';
-      const hasClientId = clientId !== 'your-google-client-id';
+      // Simulador de login que sempre funciona
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      if (hasClientId) {
-        // Login real com Google OAuth
-        googleAuthService.initiateGoogleLogin();
-      } else {
-        // Simulação para desenvolvimento
-        const authResponse = await googleAuthService.simulateGoogleLogin();
-        setGoogleUser(authResponse.user);
-        
-        toast({
-          title: "Login realizado com sucesso!",
-          description: `Bem-vindo, ${authResponse.user.name}!`,
-        });
-        
-        setAuthMethod('select');
-      }
+      const mockUser = {
+        id: '123456789',
+        email: 'usuario@exemplo.com',
+        name: 'Usuário Demo',
+        picture: 'https://via.placeholder.com/150',
+        verified_email: true
+      };
+      
+      setGoogleUser(mockUser);
+      
+      toast({
+        title: "Login realizado com sucesso!",
+        description: `Bem-vindo, ${mockUser.name}!`,
+      });
+      
+      setAuthMethod('select');
     } catch (error) {
       console.error('Erro no login Google:', error);
       toast({
@@ -120,20 +120,30 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setLoading(true);
     
     try {
-      // Simular envio de link por email
+      // Simulador de login por email que sempre funciona
       await new Promise(resolve => setTimeout(resolve, 2000));
       
+      const mockUser = {
+        id: Date.now().toString(),
+        email: email,
+        name: email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1),
+        picture: 'https://via.placeholder.com/150',
+        verified_email: true
+      };
+      
+      setGoogleUser(mockUser);
+      
       toast({
-        title: "Link enviado!",
-        description: `Um link de acesso foi enviado para ${email}`,
+        title: "Login realizado com sucesso!",
+        description: `Bem-vindo, ${mockUser.name}!`,
       });
       
       setAuthMethod('select');
       setEmail('');
     } catch (error) {
       toast({
-        title: "Erro no envio",
-        description: "Não foi possível enviar o link. Tente novamente.",
+        title: "Erro no login",
+        description: "Não foi possível fazer login. Tente novamente.",
         variant: "destructive"
       });
     } finally {
