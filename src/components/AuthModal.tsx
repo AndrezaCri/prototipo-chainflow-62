@@ -46,9 +46,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setAuthMethod('google');
     
     try {
-      // Verificar se há client ID configurado - temporariamente usar simulação
+      // Verificar se há client ID configurado
       const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '281508231912-39ssbnvq23k7e73dbpct62rjttj1tksg.apps.googleusercontent.com';
-      const hasClientId = false; // Temporariamente forçar simulação
+      const hasClientId = clientId !== 'your-google-client-id';
       
       if (hasClientId) {
         // Login real com Google OAuth
