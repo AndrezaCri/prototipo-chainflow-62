@@ -113,8 +113,9 @@ class RealChainFlowCreditService {
   async initialize(walletClient: any, publicClient: any) {
     try {
       // Configurar provider
-      this.provider = new ethers.providers.Web3Provider(walletClient);
-      this.signer = this.provider.getSigner();
+      const web3Provider = new ethers.providers.Web3Provider(walletClient as any);
+      this.provider = web3Provider;
+      this.signer = web3Provider.getSigner();
 
       // Inicializar contratos
       this.contract = new ethers.Contract(

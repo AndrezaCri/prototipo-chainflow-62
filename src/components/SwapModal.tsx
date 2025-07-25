@@ -79,6 +79,7 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
 
   const getQuote = async () => {
     if (!amountIn || parseFloat(amountIn) <= 0) return;
+    if (!isConnected) return; // Não tentar obter cotação se não estiver conectado
     
     setLoading(true);
     try {
