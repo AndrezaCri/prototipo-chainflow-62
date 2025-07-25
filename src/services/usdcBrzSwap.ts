@@ -73,6 +73,13 @@ const ERC20_ABI = [
     "outputs": [{"internalType": "string", "name": "", "type": "string"}],
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "address", "name": "owner", "type": "address"}, {"internalType": "address", "name": "spender", "type": "address"}],
+    "name": "allowance",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
   }
 ];
 
@@ -104,21 +111,36 @@ class UsdcBrzSwapService {
    * Inicializa o serviço com o provider Web3
    */
   async initialize(provider: ethers.providers.Web3Provider): Promise<void> {
-    this.provider = provider;
-    this.signer = provider.getSigner();
+    try {
+      console.log('🔄 Inicializando serviço de swap...');
+      this.provider = provider;
+      this.signer = provider.getSigner();
+      
+      // Verificar se estamos na rede Base
+      const network = await provider.getNetwork();
+      console.log('📡 Rede conectada:', network);
+      
+      if (network.chainId !== 8453 && network.chainId !== 84532) {
+        console.warn('⚠️ Aviso: Não está conectado à rede Base. ChainId:', network.chainId);
+      }
+      
+      // Testar se o signer funciona
+      const address = await this.signer.getAddress();
+      console.log('✅ Carteira conectada:', address);
+      
+      console.log('✅ Serviço de swap inicializado com sucesso');
+    } catch (error) {
+      console.error('❌ Erro ao inicializar serviço:', error);
+      throw new Error('Falha ao inicializar serviço de swap: ' + (error as Error).message);
+    }
   }
 
   /**
    * Verifica se o serviço está inicializado
    */
   private ensureInitialized(): void {
-    // Em modo de desenvolvimento, permitir operações simuladas sem carteira
-    if (import.meta.env.DEV) {
-      return;
-    }
-    
     if (!this.provider || !this.signer) {
-      throw new Error('Serviço não inicializado. Conecte uma carteira primeiro.');
+      throw new Error('Carteira não conectada. Conecte sua carteira para continuar.');
     }
   }
 
@@ -301,15 +323,30 @@ class UsdcBrzSwapService {
    * Aprova tokens se necessário
    */
   private async approveTokenIfNeeded(tokenAddress: string, amount: string, tokenSymbol: 'USDC' | 'BRZ'): Promise<void> {
-    const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, this.signer!);
-    const userAddress = await this.signer!.getAddress();
-    
-    const amountWei = ethers.utils.parseUnits(amount, tokenSymbol === 'USDC' ? 6 : 18);
-    const allowance = await tokenContract.allowance(userAddress, AERODROME_ROUTER);
-    
-    if (allowance.lt(amountWei)) {
-      const approveTx = await tokenContract.approve(AERODROME_ROUTER, ethers.constants.MaxUint256);
-      await approveTx.wait();
+    try {
+      console.log(`🔍 Verificando aprovação para ${tokenSymbol}...`);
+      
+      const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, this.signer!);
+      const userAddress = await this.signer!.getAddress();
+      
+      const amountWei = ethers.utils.parseUnits(amount, tokenSymbol === 'USDC' ? 6 : 18);
+      console.log('💰 Amount em Wei:', amountWei.toString());
+      
+      const allowance = await tokenContract.allowance(userAddress, AERODROME_ROUTER);
+      console.log('📋 Allowance atual:', allowance.toString());
+      
+      if (allowance.lt(amountWei)) {
+        console.log('🔓 Aprovando tokens...');
+        const approveTx = await tokenContract.approve(AERODROME_ROUTER, ethers.constants.MaxUint256);
+        console.log('⏳ Aguardando confirmação da aprovação...');
+        await approveTx.wait();
+        console.log('✅ Tokens aprovados com sucesso');
+      } else {
+        console.log('✅ Tokens já estão aprovados');
+      }
+    } catch (error) {
+      console.error('❌ Erro na aprovação de tokens:', error);
+      throw new Error('Falha ao aprovar tokens: ' + (error as Error).message);
     }
   }
 

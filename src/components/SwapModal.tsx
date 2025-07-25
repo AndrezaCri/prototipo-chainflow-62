@@ -38,22 +38,32 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
     const initializeService = async () => {
       if (isConnected && walletClient) {
         try {
-          // Criar provider ethers a partir do walletClient
+          console.log('🔄 Conectando serviço de swap à carteira...');
+          
+          // Criar provider ethers compatível com wagmi v2
           const { ethers } = await import('ethers');
+          
+          // wagmi v2 usa uma estrutura diferente para o transport
           const provider = new ethers.providers.Web3Provider(
-            walletClient.transport,
+            walletClient as any, 
             'any'
           );
+          
           await usdcBrzSwapService.initialize(provider);
-          console.log('✅ Serviço de swap inicializado com sucesso');
+          
         } catch (error) {
           console.error('❌ Erro ao inicializar serviço de swap:', error);
+          toast({
+            title: "Erro de Conexão",
+            description: "Falha ao conectar com a carteira. Tente novamente.",
+            variant: "destructive"
+          });
         }
       }
     };
 
     initializeService();
-  }, [isConnected, walletClient]);
+  }, [isConnected, walletClient, toast]);
 
   // Carregar dados quando conectar carteira ou abrir modal
   useEffect(() => {
