@@ -238,7 +238,11 @@ export class BaseEcosystemService {
     },
 
     getRebaseHistory: async (days: number) => {
-      const history = [];
+      const history: Array<{
+        timestamp: number;
+        rate: string;
+        apy: number;
+      }> = [];
       const now = Date.now();
       
       for (let i = 0; i < days; i++) {
@@ -543,7 +547,7 @@ export class BaseEcosystemService {
     const results: any = {};
     
     // Executar alocações em paralelo
-    const promises = [];
+    const promises: Promise<void>[] = [];
     
     if (strategy.seamlessFiAllocation > 0) {
       promises.push(

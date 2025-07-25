@@ -239,32 +239,23 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
 
     setSwapping(true);
     try {
-      let transaction;
-      
-      // Para desenvolvimento, simular swap
-      if (import.meta.env.DEV) {
-        transaction = await simulateSwapExecution(amountIn, tokenIn, tokenOut);
-        
-        // Atualizar saldos de teste
-        updateTestBalances(amountIn, quote.amountOut, tokenIn, tokenOut);
-      } else {
-        transaction = await usdcBrzSwapService.executeSwap(
-          amountIn,
-          tokenIn,
-          tokenOut,
-          slippage
-        );
-      }
+      // Sempre usar transações reais via carteira
+      const transaction = await usdcBrzSwapService.executeSwap(
+        amountIn,
+        tokenIn,
+        tokenOut,
+        slippage
+      );
 
       // Salvar transação no histórico
       usdcBrzSwapService.saveSwapTransaction(transaction);
 
       toast({
         title: "Swap realizado com sucesso!",
-        description: `Trocou ${amountIn} ${tokenIn} por ${amountOut} ${tokenOut}`,
+        description: `Hash: ${transaction.hash.slice(0, 10)}... - ${amountIn} ${tokenIn} por ${quote.amountOut} ${tokenOut}`,
       });
 
-      // Atualizar saldos
+      // Atualizar saldos reais
       await loadBalances();
       
       // Limpar formulário

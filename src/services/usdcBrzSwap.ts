@@ -218,15 +218,12 @@ class UsdcBrzSwapService {
     tokenOut: 'USDC' | 'BRZ',
     slippageTolerance: number = 0.5
   ): Promise<SwapTransaction> {
-    this.ensureInitialized();
+    if (!this.provider || !this.signer) {
+      throw new Error('Carteira não conectada. Conecte sua carteira para realizar transações reais.');
+    }
 
     const tokenInAddress = tokenIn === 'USDC' ? USDC_ADDRESS : BRZ_ADDRESS;
     const tokenOutAddress = tokenOut === 'USDC' ? USDC_ADDRESS : BRZ_ADDRESS;
-    
-    // Para desenvolvimento, simular transação
-    if (import.meta.env.DEV) {
-      return this.simulateSwapTransaction(amountIn, tokenIn, tokenOut);
-    }
 
     try {
       // 1. Obter cotação atual
