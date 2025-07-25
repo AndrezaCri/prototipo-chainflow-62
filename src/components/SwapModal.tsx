@@ -25,22 +25,20 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
   const [quote, setQuote] = useState<SwapQuote | null>(null);
   const [loading, setLoading] = useState(false);
   const [swapping, setSwapping] = useState(false);
-  const [balanceIn, setBalanceIn] = useState('0');
-  const [balanceOut, setBalanceOut] = useState('0');
+  const [balanceIn, setBalanceIn] = useState('');
+  const [balanceOut, setBalanceOut] = useState('');
   const [exchangeRate, setExchangeRate] = useState(5.5);
   const [slippage, setSlippage] = useState(0.5);
+  const [balanceLoading, setBalanceLoading] = useState(false);
+  const [showTestFaucet, setShowTestFaucet] = useState(false);
 
-  // Inicializar serviço quando conectar carteira
+  // Carregar dados quando conectar carteira ou abrir modal
   useEffect(() => {
-    if (isConnected && publicClient) {
-      // Para desenvolvimento, usar simulação - inicializar o serviço mesmo sem provider real
-      if (import.meta.env.DEV) {
-        // Simular inicialização para desenvolvimento
-        loadBalances();
-        loadExchangeRate();
-      }
+    if (isOpen) {
+      loadBalances();
+      loadExchangeRate();
     }
-  }, [isConnected, publicClient]);
+  }, [isOpen, isConnected, tokenIn, tokenOut]);
 
   // Obter cotação quando amount muda
   useEffect(() => {
@@ -53,6 +51,13 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
   }, [amountIn, tokenIn, tokenOut]);
 
   const loadBalances = async () => {
+    if (!isConnected) {
+      setBalanceIn('');
+      setBalanceOut('');
+      return;
+    }
+
+    setBalanceLoading(true);
     try {
       const [usdcBalance, brzBalance] = await Promise.all([
         usdcBrzSwapService.getTokenBalance('USDC'),
@@ -66,8 +71,18 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
         setBalanceIn(brzBalance);
         setBalanceOut(usdcBalance);
       }
+
+      // Mostrar faucet se ambos saldos forem 0
+      const hasNoTokens = parseFloat(usdcBalance) === 0 && parseFloat(brzBalance) === 0;
+      setShowTestFaucet(hasNoTokens);
+      
     } catch (error) {
       console.error('Erro ao carregar saldos:', error);
+      setBalanceIn('0');
+      setBalanceOut('0');
+      setShowTestFaucet(true);
+    } finally {
+      setBalanceLoading(false);
     }
   };
 
@@ -162,7 +177,36 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
   };
 
   const handleMaxAmount = () => {
-    setAmountIn(balanceIn);
+    if (balanceIn && parseFloat(balanceIn) > 0) {
+      setAmountIn(balanceIn);
+    }
+  };
+
+  const handleGetTestTokens = async () => {
+    setBalanceLoading(true);
+    try {
+      // Adicionar tokens de teste
+      usdcBrzSwapService.addTestTokens('1000.00', '5500.00');
+      
+      // Recarregar saldos
+      await loadBalances();
+      
+      toast({
+        title: "Tokens de teste adicionados!",
+        description: "1.000 USDC e 5.500 BRZ foram adicionados à sua carteira de teste.",
+      });
+      
+      setShowTestFaucet(false);
+    } catch (error) {
+      console.error('Erro ao adicionar tokens de teste:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível adicionar os tokens de teste.",
+        variant: "destructive"
+      });
+    } finally {
+      setBalanceLoading(false);
+    }
   };
 
   const executeSwap = async () => {
@@ -286,6 +330,13 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  const getBalanceDisplay = (balance: string, token: string) => {
+    if (!isConnected) return 'Carteira não conectada';
+    if (balanceLoading) return 'Carregando...';
+    if (!balance) return '0.00';
+    return `${parseFloat(balance).toFixed(token === 'USDC' ? 2 : 2)} ${token}`;
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -297,6 +348,43 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Status da conexão e faucet de teste */}
+          {!isConnected && (
+            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-center gap-2 text-yellow-800">
+                <AlertCircle className="h-4 w-4" />
+                <span className="text-sm font-medium">Conecte sua carteira para começar</span>
+              </div>
+            </div>
+          )}
+
+          {isConnected && showTestFaucet && (
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg space-y-3">
+              <div className="flex items-center gap-2 text-blue-800">
+                <AlertCircle className="h-4 w-4" />
+                <span className="text-sm font-medium">Sem tokens para teste</span>
+              </div>
+              <p className="text-sm text-blue-700">
+                Adicione tokens de teste para experimentar o swap USDC/BRZ.
+              </p>
+              <Button
+                onClick={handleGetTestTokens}
+                disabled={balanceLoading}
+                size="sm"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {balanceLoading ? (
+                  <>
+                    <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                    Adicionando...
+                  </>
+                ) : (
+                  'Adicionar Tokens de Teste'
+                )}
+              </Button>
+            </div>
+          )}
+
           {/* Taxa de câmbio atual */}
           <div className="p-3 bg-gray-50 rounded-lg">
             <div className="flex items-center justify-between text-sm">
@@ -310,7 +398,7 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
             <div className="flex items-center justify-between">
               <Label>De</Label>
               <span className="text-sm text-gray-600">
-                Saldo: {parseFloat(balanceIn).toFixed(tokenIn === 'USDC' ? 2 : 2)} {tokenIn}
+                Saldo: {getBalanceDisplay(balanceIn, tokenIn)}
               </span>
             </div>
             
@@ -325,7 +413,8 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
                 />
                 <button
                   onClick={handleMaxAmount}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-[#c1e428] hover:text-[#a8c424] font-medium"
+                  disabled={!isConnected || !balanceIn || parseFloat(balanceIn) === 0}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-[#c1e428] hover:text-[#a8c424] font-medium disabled:text-gray-400 disabled:cursor-not-allowed"
                 >
                   MAX
                 </button>
@@ -351,7 +440,7 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
             <div className="flex items-center justify-between">
               <Label>Para</Label>
               <span className="text-sm text-gray-600">
-                Saldo: {parseFloat(balanceOut).toFixed(tokenOut === 'USDC' ? 2 : 2)} {tokenOut}
+                Saldo: {getBalanceDisplay(balanceOut, tokenOut)}
               </span>
             </div>
             
@@ -434,11 +523,13 @@ export const SwapModal: React.FC<SwapModalProps> = ({ isOpen, onClose }) => {
           {/* Botão de swap */}
           <Button
             onClick={executeSwap}
-            disabled={!isConnected || !quote || swapping || parseFloat(amountIn) <= 0}
+            disabled={!isConnected || !quote || swapping || parseFloat(amountIn || '0') <= 0 || showTestFaucet}
             className="w-full bg-[#c1e428] hover:bg-[#a8c424] text-black font-medium"
           >
             {!isConnected ? (
               'Conecte sua carteira'
+            ) : showTestFaucet ? (
+              'Adicione tokens de teste primeiro'
             ) : swapping ? (
               <>
                 <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
