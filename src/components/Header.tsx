@@ -3,10 +3,12 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, ShoppingCart, User, Menu } from 'lucide-react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { AuthModal } from './AuthModal';
 
 export const Header: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,6 +42,9 @@ export const Header: React.FC = () => {
         <Link to="/defi-investor" className="text-base font-normal text-black cursor-pointer hover:opacity-70 transition-opacity">
           DeFi Investors
         </Link>
+        <Link to="/credit-hub" className="text-base font-normal text-black cursor-pointer hover:opacity-70 transition-opacity">
+          Credit Hub
+        </Link>
       </nav>
       
       <form onSubmit={handleSearch} className="relative hidden w-96 sm:block lg:w-[500px]" role="search">
@@ -55,9 +60,14 @@ export const Header: React.FC = () => {
       </form>
       
       <div className="flex items-center gap-4">
-        {/* Botão de Conectar Carteira */}
+        {/* Botão de Login/Conectar */}
         <div className="hidden sm:block">
-          <ConnectButton />
+          <button
+            onClick={() => setIsAuthModalOpen(true)}
+            className="bg-[#c1e428] text-black px-6 py-2 rounded-full font-medium hover:bg-[#a8c424] transition-colors"
+          >
+            Entrar
+          </button>
         </div>
         
         <button className="rounded-full p-2 text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Carrinho de compras">
@@ -85,10 +95,16 @@ export const Header: React.FC = () => {
             <a href="#" className="text-base font-normal text-black">New Arrivals</a>
             <a href="#" className="text-base font-normal text-black">Brands</a>
             <Link to="/defi-investor" className="text-base font-normal text-black">DeFi Investor</Link>
+            <Link to="/credit-hub" className="text-base font-normal text-black">Credit Hub</Link>
             
-            {/* Botão de Conectar Carteira no menu móvel */}
+            {/* Botão de Login no menu móvel */}
             <div className="mt-4">
-              <ConnectButton />
+              <button
+                onClick={() => setIsAuthModalOpen(true)}
+                className="w-full bg-[#c1e428] text-black px-6 py-2 rounded-full font-medium hover:bg-[#a8c424] transition-colors"
+              >
+                Entrar
+              </button>
             </div>
             
             <form onSubmit={handleSearch} className="relative mt-4">
@@ -104,6 +120,12 @@ export const Header: React.FC = () => {
           </nav>
         </div>
       )}
+      
+      {/* Modal de Autenticação */}
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+      />
     </header>
     </>
   );

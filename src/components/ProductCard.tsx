@@ -2,9 +2,8 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { ChainFlowPayment } from './ChainFlowPayment';
+import { usePixPayments } from '@/hooks/usePixPayments';
 
 interface Product {
   id: string;
@@ -30,24 +29,73 @@ interface ProductCardProps {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onBuyNow, onAddToCart }) => {
   const { toast } = useToast();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { generateSupplierPayment, generateBuyerCharge } = usePixPayments();
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [quantity, setQuantity] = useState(product.minOrder);
 
-  const handleOpenDialog = () => {
+  const handleOpenPayment = () => {
     setQuantity(product.minOrder);
-    setIsDialogOpen(true);
+    setIsPaymentOpen(true);
   };
 
-  const handleAddToCart = () => {
+  const handlePaymentComplete = async (paymentData: any) => {
+    console.log('Payment completed:', paymentData);
+    
+    if (paymentData.paymentMethod === 'cash') {
+      // Pagamento à vista - gerar PIX para o comprador
+      toast({
+        title: "Pagamento à vista confirmado",
+        description: `PIX gerado: ${paymentData.pixCode}. Realize o pagamento para finalizar.`,
+      });
+    } else {
+      // Pagamento a prazo - ChainFlow Credit
+      if (paymentData.creditApproved && paymentData.applicationId) {
+        try {
+          // 1. Gerar pagamento PIX para o fornecedor (ChainFlow paga à vista)
+          const supplierPayment = await generateSupplierPayment({
+            supplierId: `supplier_${product.id}`,
+            supplierName: `Fornecedor ${product.category}`,
+            supplierCnpj: '12.345.678/0001-90',
+            supplierPixKey: 'fornecedor@email.com',
+            amount: paymentData.totalAmount,
+            applicationId: paymentData.applicationId,
+            productDescription: `${product.name} - ${quantity} ${product.unit}`
+          });
+
+          if (supplierPayment) {
+            // 2. Gerar cobrança PIX para o comprador (na data de vencimento)
+            const dueDate = new Date(paymentData.dueDate);
+            const buyerCharge = await generateBuyerCharge(
+              paymentData.applicationId,
+              '98.765.432/0001-10', // CNPJ do comprador (seria obtido do formulário)
+              paymentData.totalAmount,
+              dueDate
+            );
+
+            if (buyerCharge) {
+              toast({
+                title: "Crédito ChainFlow aprovado!",
+                description: `O fornecedor receberá à vista. Você receberá a cobrança PIX em ${dueDate.toLocaleDateString('pt-BR')}.`,
+              });
+            }
+          }
+        } catch (error) {
+          toast({
+            title: "Erro no processamento",
+            description: "Ocorreu um erro ao processar os pagamentos PIX.",
+            variant: "destructive"
+          });
+        }
+      }
+    }
+    
+    // Adicionar ao carrinho ou processar compra
     onAddToCart(product, quantity);
-    toast({
-      title: "Produto adicionado ao carrinho",
-      description: `${quantity} ${product.unit} de ${product.name} adicionado ao carrinho.`,
-    });
-    setIsDialogOpen(false);
   };
 
-  const totalPrice = (product.paymentTerms.cash * quantity).toFixed(2);
+  // Preços corretos: compradores pagam preço cheio, fornecedores dão 5% para ChainFlow
+  const fullPrice = product.price; // Preço que o comprador paga
+  const supplierReceives = fullPrice * 0.95; // Fornecedor recebe 95% (ChainFlow fica com 5%)
 
   return (
     <>
@@ -68,80 +116,48 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onBuyNow, onA
           </div>
           
           <div className="space-y-2">
-            <div className="text-lg font-bold text-green-600">
-              À vista: R$ {product.paymentTerms.cash.toFixed(2)}/{product.unit}
+            <div className="text-lg font-bold text-[#c1e428]">
+              Financiamento ChainFlow
+              <span className="text-xs text-gray-500 block">Pague a prazo, fornecedor recebe à vista</span>
             </div>
             <div className="text-sm text-gray-600 space-y-1">
-              <div>30 dias: R$ {product.paymentTerms.days30.toFixed(2)}/{product.unit}</div>
-              <div>60 dias: R$ {product.paymentTerms.days60.toFixed(2)}/{product.unit}</div>
-              <div>90 dias: R$ {product.paymentTerms.days90.toFixed(2)}/{product.unit}</div>
+              <div className="flex justify-between">
+                <span>30 dias:</span>
+                <span className="font-medium">R$ {product.paymentTerms.days30.toFixed(2)}/{product.unit}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>60 dias:</span>
+                <span className="font-medium">R$ {product.paymentTerms.days60.toFixed(2)}/{product.unit}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>90 dias:</span>
+                <span className="font-medium">R$ {product.paymentTerms.days90.toFixed(2)}/{product.unit}</span>
+              </div>
             </div>
           </div>
           
-          <div className="pt-2">
+          <div className="pt-2 space-y-2">
             <Button 
               size="sm" 
-              className="w-full bg-primary hover:bg-primary/90"
-              onClick={handleOpenDialog}
+              className="w-full bg-[#c1e428] hover:bg-[#a8c523] text-black font-semibold"
+              onClick={handleOpenPayment}
             >
-              Comprar
+              Comprar via ChainFlow
             </Button>
+            <p className="text-xs text-gray-500 text-center">
+              Financiamento pela ChainFlow - Análise de crédito automática
+            </p>
           </div>
         </div>
       </div>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Adicionar ao Carrinho</DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <img 
-                src={product.image} 
-                alt={product.name}
-                className="w-12 h-12 object-cover rounded"
-              />
-              <div>
-                <h4 className="font-medium">{product.name}</h4>
-                <p className="text-sm text-muted-foreground">R$ {product.paymentTerms.cash.toFixed(2)}/{product.unit}</p>
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="quantity">Quantidade</Label>
-              <Input
-                id="quantity"
-                type="number"
-                min={product.minOrder}
-                value={quantity}
-                onChange={(e) => setQuantity(Math.max(product.minOrder, parseInt(e.target.value) || product.minOrder))}
-                className="w-full"
-              />
-              <p className="text-xs text-muted-foreground">
-                Mínimo: {product.minOrder} {product.unit}
-              </p>
-            </div>
-            
-            <div className="pt-2 border-t">
-              <div className="flex justify-between items-center">
-                <span className="font-medium">Total:</span>
-                <span className="font-bold text-lg">R$ {totalPrice}</span>
-              </div>
-            </div>
-          </div>
-          
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleAddToCart}>
-              Adicionar ao Carrinho
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ChainFlowPayment
+        product={product}
+        quantity={quantity}
+        isOpen={isPaymentOpen}
+        onClose={() => setIsPaymentOpen(false)}
+        onPaymentComplete={handlePaymentComplete}
+      />
     </>
   );
 };
