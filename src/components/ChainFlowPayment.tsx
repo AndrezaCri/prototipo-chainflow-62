@@ -98,9 +98,19 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
   const handlePaymentMethodChange = (method: string) => {
     setPaymentMethod(method as 'cash' | 'days30' | 'days60' | 'days90');
     
-    // Para pagamentos a prazo, ir para análise de crédito
-    setStep('company');
-    setCreditAnalysis(null);
+    // Fechar modal e ir para página de pagamento
+    const totalAmount = getPaymentAmount(method);
+    
+    const paymentData: PaymentData = {
+      product,
+      quantity,
+      paymentMethod: method as 'cash' | 'days30' | 'days60' | 'days90',
+      totalAmount,
+    };
+
+    onPaymentComplete(paymentData);
+    onClose();
+    resetForm();
   };
 
   const handleCompanyDataSubmit = async () => {
