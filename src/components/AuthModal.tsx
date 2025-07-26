@@ -203,24 +203,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <h4 className="font-medium text-sm">Benefícios da sua conta:</h4>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  <li className="flex items-center gap-2">
-                    <TrendingUp className="h-3 w-3 text-[#c1e428]" />
-                    Acesso ao crédito ChainFlow
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Shield className="h-3 w-3 text-[#c1e428]" />
-                    Compras B2B facilitadas
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Wallet className="h-3 w-3 text-[#c1e428]" />
-                    Transações seguras
-                  </li>
-                </ul>
-              </div>
-
               <div className="flex gap-2">
                 <Button onClick={handleLogout} variant="outline" className="flex-1">
                   Sair
@@ -272,7 +254,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <div className="text-center text-sm text-gray-500">ou</div>
 
                 {/* Conectar Carteira Web3 */}
-                
+                <ConnectButton />
 
                 {/* Login com Email */}
                 <Button onClick={() => setAuthMethod('email')} className="w-full flex items-center gap-3 p-4 border-2 border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-800 font-medium rounded-lg transition-colors" variant="ghost">
