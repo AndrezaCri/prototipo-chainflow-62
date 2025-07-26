@@ -270,13 +270,10 @@ export const LiquidityPools: React.FC = () => {
             <div className="space-y-3">
               {!isConnected ? (
                 <div className="text-sm text-gray-600 text-center p-3 bg-gray-50 rounded-lg">
-                  Conecte sua carteira para investir com USDC
+                  Conecte sua carteira para investir com BRZ
                 </div>
               ) : (
                 <>
-                  <div className="text-sm text-gray-600 text-center mb-3">
-                    Investimento mínimo: $1,000 USDC
-                  </div>
                   
                   {/* Investment Amount Input */}
                   <div className="space-y-2">
