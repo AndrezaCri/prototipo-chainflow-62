@@ -430,20 +430,9 @@ export const SwapModal: React.FC<SwapModalProps> = ({
                 <span className="text-gray-600">Taxa Aerodrome:</span>
                 <span className="font-medium text-green-600">{quote.fee}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Liquidez pool:</span>
-                <span className="font-medium text-blue-600">~$21k</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Impacto no preço:</span>
-                <span className={`font-medium ${quote.priceImpact > 5 ? 'text-red-600' : 'text-orange-600'}`}>
-                  {quote.priceImpact}%
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Slippage máximo:</span>
-                <span className="font-medium">{slippage}%</span>
-              </div>
+              
+              
+              
             </div>}
 
           {/* Configuração de slippage */}
