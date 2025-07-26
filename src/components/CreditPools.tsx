@@ -38,6 +38,15 @@ export const CreditPools: React.FC<CreditPoolsProps> = ({ onInvest }) => {
       return;
     }
 
+    // Para investir, precisa ter 10% do valor em BRZ
+    const requiredBrz = investmentAmount * 0.1;
+    const brzBalanceValue = brzBalance ? Number(brzBalance.formatted) : 0;
+    
+    if (brzBalanceValue < requiredBrz) {
+      alert(`Saldo insuficiente. Para investir ${formatCurrency(investmentAmount)}, você precisa de ${requiredBrz.toFixed(2)} BRZ. Saldo atual: ${brzBalanceValue.toFixed(2)} BRZ`);
+      return;
+    }
+
     setIsInvesting(true);
     
     try {
@@ -60,23 +69,28 @@ export const CreditPools: React.FC<CreditPoolsProps> = ({ onInvest }) => {
     }
   };
 
-  const calculateReturns = () => {
-    if (!investmentAmount || !selectedTerm) return null;
+  const getMaxInvestmentForTerm = (term: number): number => {
+    const brzBalanceValue = brzBalance ? Number(brzBalance.formatted) : 0;
+    const maxByBalance = brzBalanceValue * 10; // 1 BRZ = R$ 10 de investimento
     
-    const pool = creditPools.find(p => p.id.toString() === selectedPool);
-    if (!pool) return null;
+    // Definir limites baseados no prazo
+    if (term === 30) return Math.min(maxByBalance, 10000); // Máximo R$ 10.000 para 30 dias
+    if (term === 60) return Math.min(maxByBalance, 50000); // Máximo R$ 50.000 para 60 dias
+    if (term === 90) return Math.min(maxByBalance, 100000); // Máximo R$ 100.000 para 90 dias
     
-    const apy = pool.apy / 100;
-    const termInYears = selectedTerm / 365;
-    const estimatedReturns = investmentAmount * apy * termInYears;
-    const totalValue = investmentAmount + estimatedReturns;
+    return maxByBalance;
+  };
+
+  const getAvailableTerms = (): number[] => {
+    const brzBalanceValue = brzBalance ? Number(brzBalance.formatted) : 0;
+    const terms: number[] = [];
     
-    return {
-      invested: investmentAmount,
-      term: selectedTerm,
-      estimatedReturns,
-      totalValue
-    };
+    // Para investir R$ 100, precisa ter 10 BRZ
+    if (brzBalanceValue >= 10) terms.push(30); // Mínimo 10 BRZ para 30 dias
+    if (brzBalanceValue >= 50) terms.push(60); // Mínimo 50 BRZ para 60 dias  
+    if (brzBalanceValue >= 100) terms.push(90); // Mínimo 100 BRZ para 90 dias
+    
+    return terms;
   };
 
   const formatCurrency = (value: number) => {
@@ -355,11 +369,23 @@ export const CreditPools: React.FC<CreditPoolsProps> = ({ onInvest }) => {
               </div>
             </div>
 
-              {/* Verificação de Saldo BRZ */}
+            {/* Verificação de Saldo BRZ */}
             <div className="mb-4">
-              <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Saldo BRZ
-              </label>
+              <div className="flex justify-between items-center mb-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Verificar Saldo BRZ
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    // Simulação de abertura da carteira
+                    alert('Abrindo carteira para verificar saldo BRZ...');
+                  }}
+                  className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                >
+                  Abrir Carteira
+                </button>
+              </div>
               <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-700">Saldo atual:</span>
@@ -370,9 +396,22 @@ export const CreditPools: React.FC<CreditPoolsProps> = ({ onInvest }) => {
                 {investmentAmount > 0 && (
                   <div className="mt-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-gray-600">BRZ necessário (10%):</span>
+                      <span className="text-gray-600">BRZ necessário:</span>
                       <span className="font-medium">
                         {(investmentAmount * 0.1).toFixed(2)} BRZ
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Status:</span>
+                      <span className={`font-medium ${
+                        brzBalance && Number(brzBalance.formatted) >= (investmentAmount * 0.1)
+                          ? 'text-green-600' 
+                          : 'text-red-600'
+                      }`}>
+                        {brzBalance && Number(brzBalance.formatted) >= (investmentAmount * 0.1)
+                          ? '✓ Saldo suficiente' 
+                          : '✗ Saldo insuficiente'
+                        }
                       </span>
                     </div>
                   </div>
@@ -381,20 +420,23 @@ export const CreditPools: React.FC<CreditPoolsProps> = ({ onInvest }) => {
             </div>
 
             {/* Simulação de Retorno */}
-            {investmentAmount >= 100 && calculateReturns() && (
-              <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
-                <h4 className="font-semibold text-green-800 mb-3">Simulação de Retorno</h4>
+            {investmentAmount > 0 && selectedTerm > 0 && (
+              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <h4 className="font-semibold text-green-900 mb-3 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  Simulação de Retorno
+                </h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-700">Valor investido:</span>
-                    <span className="font-semibold">{formatCurrency(calculateReturns()!.invested)}</span>
+                    <span className="font-semibold">{formatCurrency(investmentAmount)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-700">Prazo:</span>
-                    <span className="font-semibold">{calculateReturns()!.term} dias</span>
+                    <span className="font-semibold">{selectedTerm} dias</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-700">Taxa APY:</span>
+                    <span className="text-gray-700">APY:</span>
                     <span className="font-semibold">
                       {creditPools.find(p => p.id.toString() === selectedPool)?.apy}%
                     </span>
@@ -402,14 +444,18 @@ export const CreditPools: React.FC<CreditPoolsProps> = ({ onInvest }) => {
                   <div className="border-t border-green-200 pt-2 mt-2">
                     <div className="flex justify-between">
                       <span className="text-gray-700">Juros estimado:</span>
-                      <span className="font-semibold text-green-600">
-                        {formatCurrency(calculateReturns()!.estimatedReturns)}
+                      <span className="font-semibold text-green-700">
+                        {formatCurrency(
+                          investmentAmount * ((creditPools.find(p => p.id.toString() === selectedPool)?.apy || 0) / 100 * (selectedTerm / 365))
+                        )}
                       </span>
                     </div>
-                    <div className="flex justify-between text-lg">
-                      <span className="font-semibold text-gray-900">Valor total ao final:</span>
-                      <span className="font-bold text-green-700">
-                        {formatCurrency(calculateReturns()!.totalValue)}
+                    <div className="flex justify-between">
+                      <span className="text-gray-700 font-medium">Valor total ao final:</span>
+                      <span className="font-bold text-green-800 text-lg">
+                        {formatCurrency(
+                          investmentAmount * (1 + (creditPools.find(p => p.id.toString() === selectedPool)?.apy || 0) / 100 * (selectedTerm / 365))
+                        )}
                       </span>
                     </div>
                   </div>
@@ -433,7 +479,8 @@ export const CreditPools: React.FC<CreditPoolsProps> = ({ onInvest }) => {
                 disabled={
                   isInvesting || 
                   investmentAmount < 100 || 
-                  selectedTerm === 0
+                  selectedTerm === 0 ||
+                  (brzBalance && Number(brzBalance.formatted) < (investmentAmount * 0.1))
                 }
                 className="flex-1 bg-[#c1e428] text-black font-semibold py-3 px-4 rounded-lg hover:bg-[#a8c523] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
