@@ -8,10 +8,12 @@ import { User, Mail, Wallet, Shield, TrendingUp, RefreshCw, ArrowUpDown } from '
 import { useToast } from '@/hooks/use-toast';
 import { googleAuthService, GoogleUser } from '@/services/googleAuth';
 import { SwapModal } from './SwapModal';
+
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
 export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
   onClose
@@ -42,6 +44,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       handleGoogleCallback(code, state);
     }
   }, [isOpen]);
+
   const handleGoogleLogin = async () => {
     setLoading(true);
     setAuthMethod('google');
@@ -73,6 +76,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setLoading(false);
     }
   };
+
   const handleGoogleCallback = async (code: string, state: string) => {
     setLoading(true);
     try {
@@ -98,6 +102,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setLoading(false);
     }
   };
+
   const handleEmailLogin = async () => {
     if (!email || !email.includes('@')) {
       toast({
@@ -135,6 +140,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setLoading(false);
     }
   };
+
   const handleLogout = () => {
     googleAuthService.logout();
     setGoogleUser(null);
@@ -143,15 +149,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       description: "Você foi desconectado com sucesso."
     });
   };
+
   const resetModal = () => {
     setAuthMethod('select');
     setEmail('');
     setLoading(false);
   };
+
   const handleClose = () => {
     resetModal();
     onClose();
   };
+
   const openSwapModal = () => {
     setShowSwapModal(true);
   };
@@ -227,6 +236,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         <SwapModal isOpen={showSwapModal} onClose={() => setShowSwapModal(false)} />
       </>;
   }
+
   return <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-md">
@@ -329,13 +339,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       Enviando...
                     </> : 'Enviar Link'}
                 </Button>
-              </div>
-
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  <strong>Como funciona:</strong> Enviaremos um link seguro para seu email. 
-                  Clique no link para acessar sua conta ChainFlow.
-                </p>
               </div>
             </div>}
         </DialogContent>
