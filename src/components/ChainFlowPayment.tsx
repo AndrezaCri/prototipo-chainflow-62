@@ -74,7 +74,7 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
     monthlyRevenue: 0
   });
   const [creditAnalysis, setCreditAnalysis] = useState<any>(null);
-  const [step, setStep] = useState<'payment' | 'company' | 'analysis' | 'confirmation'>('payment');
+  const [step, setStep] = useState<'payment' | 'company' | 'confirmation'>('payment');
 
   // Calcular valores baseados no método de pagamento
   const getPaymentAmount = (method: string) => {
@@ -126,7 +126,7 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
       return;
     }
 
-    setStep('analysis');
+    
 
     try {
       const termDays = parseInt(paymentMethod.replace('days', '')) as 30 | 60 | 90;
@@ -368,24 +368,6 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
           </div>
         )}
 
-        {/* Step 3: Análise de crédito */}
-        {step === 'analysis' && (
-          <div className="space-y-4">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#c1e428] mx-auto mb-4"></div>
-              <h3 className="text-lg font-medium">Analisando seu crédito...</h3>
-              <p className="text-sm text-gray-600 mt-2">
-                Nossa IA está avaliando os dados da sua empresa usando tecnologia blockchain
-              </p>
-              <div className="mt-4 space-y-2 text-sm text-gray-500">
-                <p>✓ Verificando dados da empresa</p>
-                <p>✓ Calculando business score</p>
-                <p>✓ Consultando Credit Pools DeFi</p>
-                <p>✓ Definindo taxa de juros</p>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Step 4: Confirmação */}
         {step === 'confirmation' && (
