@@ -5,7 +5,7 @@ Este projeto está sob a licença MIT.
 ---
 
 **URL do Projeto**:https://chainflow.lovable.app/
-
+</br></br>
 
 ## 🏢 Marketplace B2B com DeFi Integrado
 
@@ -35,7 +35,7 @@ Uma plataforma moderna de investimentos DeFi que permite aos usuários gerenciar
 - **Participação em Pools**: Forneça liquidez e ganhe recompensas
 - **APY Dinâmico**: Visualize rendimentos estimados e APYs em tempo real
 
-### 🔄 Stablecoin Swap
+### 🔄 Stablecoin Coins Swap
 - **Troca Instantânea**: Realize swaps de Stablecoins de forma segura
 - **Melhores Taxas**: Integração com múltiplas DEXs para melhor preço
 - **Transações Seguras**: Validação de contratos e verificação de tokens
