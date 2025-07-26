@@ -301,22 +301,6 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
               </div>
             </RadioGroup>
 
-            {paymentMethod !== 'cash' && (
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-start gap-2">
-                  <Shield className="h-5 w-5 text-blue-600 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-blue-800">Como funciona o ChainFlow Credit:</p>
-                    <ul className="text-sm text-blue-700 mt-1 space-y-1">
-                      <li>• O fornecedor recebe à vista via PIX</li>
-                      <li>• Você paga para ChainFlow na data de vencimento</li>
-                      <li>• Análise de crédito automática com IA</li>
-                      <li>• Liquidez garantida pelos Credit Pools DeFi</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         )}
 
