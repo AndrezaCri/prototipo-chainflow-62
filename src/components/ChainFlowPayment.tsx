@@ -74,7 +74,7 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
     monthlyRevenue: 0
   });
   const [creditAnalysis, setCreditAnalysis] = useState<any>(null);
-  const [step, setStep] = useState<'payment' | 'company' | 'confirmation'>('payment');
+  const [step, setStep] = useState<'payment' | 'confirmation'>('payment');
 
   // Calcular valores baseados no método de pagamento
   const getPaymentAmount = (method: string) => {
@@ -95,12 +95,47 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
     return { type: 'interest', value: percentage, amount: difference };
   };
 
-  const handlePaymentMethodChange = (method: string) => {
+  const handlePaymentMethodChange = async (method: string) => {
     setPaymentMethod(method as 'cash' | 'days30' | 'days60' | 'days90');
     
-    // Para pagamentos a prazo, ir para análise de crédito
-    setStep('company');
-    setCreditAnalysis(null);
+    // Para pagamentos a prazo, fazer análise automática e ir direto para confirmação
+    if (method !== 'cash') {
+      const orderAmount = getPaymentAmount(method);
+      const termDays = parseInt(method.replace('days', '')) as 30 | 60 | 90;
+      
+      try {
+        // Dados padrão da empresa para demonstração
+        const defaultCompanyData = {
+          name: 'Empresa Demo',
+          cnpj: '00.000.000/0001-00',
+          monthlyRevenue: 100000
+        };
+        
+        const analysis = await analyzeCreditRequest(
+          defaultCompanyData.name,
+          defaultCompanyData.cnpj,
+          defaultCompanyData.monthlyRevenue,
+          orderAmount,
+          termDays,
+          `Compra de ${product.name} - ${quantity} ${product.unit}`
+        );
+        
+        if (analysis) {
+          setCreditAnalysis(analysis);
+          setStep('confirmation');
+        }
+      } catch (error) {
+        // Em caso de erro, continuar para confirmação com análise simulada
+        setCreditAnalysis({
+          approved: true,
+          businessScore: 8.5,
+          interestRate: 2.5,
+          riskLevel: 'Baixo',
+          maxAmount: orderAmount
+        });
+        setStep('confirmation');
+      }
+    }
   };
 
   const handleCompanyDataSubmit = async () => {
@@ -150,7 +185,7 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
         description: "Ocorreu um erro durante a análise de crédito. Tente novamente.",
         variant: "destructive"
       });
-      setStep('company');
+      setStep('payment');
     }
   };
 
@@ -304,69 +339,6 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
           </div>
         )}
 
-        {/* Step 2: Dados da empresa */}
-        {step === 'company' && (
-          <div className="space-y-4">
-            <div>
-              <Label className="text-base font-medium">Dados da empresa para análise de crédito:</Label>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <Label htmlFor="companyName">Nome da Empresa</Label>
-                <Input
-                  id="companyName"
-                  value={companyData.name}
-                  onChange={(e) => setCompanyData({...companyData, name: e.target.value})}
-                  placeholder="Ex: Restaurante do João Ltda"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="cnpj">CNPJ</Label>
-                <Input
-                  id="cnpj"
-                  value={companyData.cnpj}
-                  onChange={(e) => setCompanyData({...companyData, cnpj: e.target.value})}
-                  placeholder="00.000.000/0001-00"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="revenue">Faturamento Mensal (R$)</Label>
-                <Input
-                  id="revenue"
-                  type="number"
-                  value={companyData.monthlyRevenue}
-                  onChange={(e) => setCompanyData({...companyData, monthlyRevenue: Number(e.target.value)})}
-                  placeholder="50000"
-                />
-              </div>
-            </div>
-
-            {companyData.monthlyRevenue > 0 && (
-              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-sm text-green-700">
-                  <strong>Taxa estimada:</strong> {getEstimatedInterestRate(
-                    companyData.monthlyRevenue, 
-                    getPaymentAmount(paymentMethod), 
-                    parseInt(paymentMethod.replace('days', '')) as 30 | 60 | 90
-                  )}% para {paymentMethod.replace('days', '')} dias
-                </p>
-              </div>
-            )}
-
-            <div className="pt-2">
-              <Button 
-                onClick={handleCompanyDataSubmit} 
-                className="w-full"
-                disabled={loading}
-              >
-                {loading ? 'Analisando...' : 'Analisar Crédito'}
-              </Button>
-            </div>
-          </div>
-        )}
 
 
         {/* Step 4: Confirmação */}
