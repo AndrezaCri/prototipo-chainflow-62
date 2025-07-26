@@ -121,10 +121,10 @@ export const LiquidityPools: React.FC = () => {
 
     // Pegar o valor digitado pelo usuário
     const investmentAmount = parseFloat(investmentAmounts[poolId] || '0');
-    const minimumInvestment = 1000;
+    const minimumInvestment = 1;
     
     if (investmentAmount < minimumInvestment) {
-      alert(`Valor mínimo de investimento é $${minimumInvestment} USDC`);
+      alert(`Valor mínimo de investimento é ${minimumInvestment} BRZ`);
       return;
     }
     
@@ -278,21 +278,21 @@ export const LiquidityPools: React.FC = () => {
                   {/* Investment Amount Input */}
                   <div className="space-y-2">
                     <label htmlFor={`investment-${pool.id}`} className="block text-sm font-medium text-gray-700">
-                      Valor do Investimento (USDC)
+                      Valor do Investimento (BRZ)
                     </label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
                       <input
                         id={`investment-${pool.id}`}
                         type="number"
-                        min="1000"
-                        step="100"
+                        min="1"
+                        step="1"
                         value={investmentAmounts[pool.id] || ''}
                         onChange={(e) => setInvestmentAmounts(prev => ({
                           ...prev,
                           [pool.id]: e.target.value
                         }))}
-                        placeholder="1,000"
+                        placeholder="1"
                         className="w-full pl-7 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/50 focus:border-transparent text-base"
                         disabled={selectedPool === pool.id || isProcessingPayment || isPending || isConfirming}
                       />
@@ -304,7 +304,7 @@ export const LiquidityPools: React.FC = () => {
               <button
                 onClick={() => handleFinance(pool.id)}
                 className="w-full bg-black text-white text-base font-medium px-[54px] py-4 rounded-[62px] hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black/50 transition-all duration-300 disabled:bg-[#666666] disabled:cursor-not-allowed"
-                disabled={!isConnected || selectedPool === pool.id || isProcessingPayment || isPending || isConfirming || !investmentAmounts[pool.id] || parseFloat(investmentAmounts[pool.id] || '0') < 1000}
+                disabled={!isConnected || selectedPool === pool.id || isProcessingPayment || isPending || isConfirming || !investmentAmounts[pool.id] || parseFloat(investmentAmounts[pool.id] || '0') < 1}
               >
                 {isProcessingPayment || isPending ? (
                   'Processando Pagamento...'
