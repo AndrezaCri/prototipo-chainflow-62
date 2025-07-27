@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -67,7 +68,7 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
     loading 
   } = useChainFlowCredit();
   
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'days30' | 'days60' | 'days90'>('days30');
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'days30' | 'days60' | 'days90' | ''>('');
   const [companyData, setCompanyData] = useState<CompanyData>({
     name: '',
     cnpj: '',
@@ -96,7 +97,17 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
   };
 
   const handlePaymentMethodChange = (method: string) => {
-    setPaymentMethod(method as 'cash' | 'days30' | 'days60' | 'days90');
+    if (!method) {
+      toast({
+        title: "Seleção obrigatória",
+        description: "Por favor, selecione um prazo de pagamento para continuar.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const paymentMethodTyped = method as 'cash' | 'days30' | 'days60' | 'days90';
+    setPaymentMethod(paymentMethodTyped);
     
     // Fechar modal e ir para página de pagamento
     const totalAmount = getPaymentAmount(method);
@@ -104,7 +115,7 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
     const paymentData: PaymentData = {
       product,
       quantity,
-      paymentMethod: method as 'cash' | 'days30' | 'days60' | 'days90',
+      paymentMethod: paymentMethodTyped,
       totalAmount,
     };
 
@@ -114,6 +125,15 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
   };
 
   const handleCompanyDataSubmit = async () => {
+    if (!paymentMethod) {
+      toast({
+        title: "Prazo não selecionado",
+        description: "Por favor, selecione um prazo de pagamento.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!companyData.name || !companyData.cnpj || !companyData.monthlyRevenue) {
       toast({
         title: "Dados incompletos",
@@ -135,8 +155,6 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
       });
       return;
     }
-
-    
 
     try {
       const termDays = parseInt(paymentMethod.replace('days', '')) as 30 | 60 | 90;
@@ -165,6 +183,15 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
   };
 
   const handleConfirmPayment = async () => {
+    if (!paymentMethod) {
+      toast({
+        title: "Prazo não selecionado",
+        description: "Por favor, selecione um prazo de pagamento.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const totalAmount = getPaymentAmount(paymentMethod);
     
     // Pagamento a prazo via ChainFlow Credit
@@ -221,7 +248,7 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
   };
 
   const resetForm = () => {
-    setPaymentMethod('cash');
+    setPaymentMethod('');
     setCompanyData({ name: '', cnpj: '', monthlyRevenue: 0 });
     setCreditAnalysis(null);
     setStep('payment');
@@ -264,7 +291,7 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
               <Label className="text-base font-medium">Escolha a forma de pagamento:</Label>
             </div>
             
-            <RadioGroup value={paymentMethod} onValueChange={handlePaymentMethodChange}>
+            <RadioGroup value={paymentMethod || undefined} onValueChange={handlePaymentMethodChange}>
               {/* 30 dias */}
               <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
                 <RadioGroupItem value="days30" id="days30" />
@@ -354,7 +381,7 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
               </div>
             </div>
 
-            {companyData.monthlyRevenue > 0 && (
+            {companyData.monthlyRevenue > 0 && paymentMethod && (
               <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
                 <p className="text-sm text-green-700">
                   <strong>Taxa estimada:</strong> {getEstimatedInterestRate(
@@ -377,7 +404,6 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
             </div>
           </div>
         )}
-
 
         {/* Step 4: Confirmação */}
         {step === 'confirmation' && (
@@ -418,42 +444,44 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
               </div>
             )}
 
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <h3 className="font-medium mb-3">Resumo do Pagamento:</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span>Método:</span>
-                  <span className="font-medium">
-                    {paymentMethod === 'cash' ? 'À vista (PIX)' : 
-                     `${paymentMethod.replace('days', '')} dias`}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Valor Total:</span>
-                  <span className="font-medium">
-                    {paymentMethod === 'cash' ? 
-                      formatCurrency(getPaymentAmount(paymentMethod) - getDiscountOrInterest(paymentMethod).amount) :
-                      formatCurrency(getPaymentAmount(paymentMethod))
-                    }
-                  </span>
-                </div>
-                {paymentMethod === 'cash' && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Desconto:</span>
-                    <span className="font-medium">-{formatCurrency(getDiscountOrInterest(paymentMethod).amount)}</span>
-                  </div>
-                )}
-                {paymentMethod !== 'cash' && (
+            {paymentMethod && (
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <h3 className="font-medium mb-3">Resumo do Pagamento:</h3>
+                <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span>Data de Vencimento:</span>
+                    <span>Método:</span>
                     <span className="font-medium">
-                      {new Date(Date.now() + parseInt(paymentMethod.replace('days', '')) * 24 * 60 * 60 * 1000)
-                        .toLocaleDateString('pt-BR')}
+                      {paymentMethod === 'cash' ? 'À vista (PIX)' : 
+                       `${paymentMethod.replace('days', '')} dias`}
                     </span>
                   </div>
-                )}
+                  <div className="flex justify-between">
+                    <span>Valor Total:</span>
+                    <span className="font-medium">
+                      {paymentMethod === 'cash' ? 
+                        formatCurrency(getPaymentAmount(paymentMethod) - getDiscountOrInterest(paymentMethod).amount) :
+                        formatCurrency(getPaymentAmount(paymentMethod))
+                      }
+                    </span>
+                  </div>
+                  {paymentMethod === 'cash' && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Desconto:</span>
+                      <span className="font-medium">-{formatCurrency(getDiscountOrInterest(paymentMethod).amount)}</span>
+                    </div>
+                  )}
+                  {paymentMethod !== 'cash' && (
+                    <div className="flex justify-between">
+                      <span>Data de Vencimento:</span>
+                      <span className="font-medium">
+                        {new Date(Date.now() + parseInt(paymentMethod.replace('days', '')) * 24 * 60 * 60 * 1000)
+                          .toLocaleDateString('pt-BR')}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
             {(!creditAnalysis || creditAnalysis.approved) && (
               <Button 
@@ -476,4 +504,3 @@ export const ChainFlowPayment: React.FC<ChainFlowPaymentProps> = ({
     </Dialog>
   );
 };
-
