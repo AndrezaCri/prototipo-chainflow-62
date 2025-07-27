@@ -3,22 +3,21 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { User, Mail, Wallet, Shield, TrendingUp, RefreshCw, ArrowUpDown } from 'lucide-react';
+import { User, Mail, Shield, RefreshCw, ArrowUpDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { googleAuthService, GoogleUser } from '@/services/googleAuth';
 import { SwapModal } from './SwapModal';
+
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
 export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
   onClose
 }) => {
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
   const [authMethod, setAuthMethod] = useState<'select' | 'google' | 'web3' | 'email'>('select');
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -42,6 +41,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       handleGoogleCallback(code, state);
     }
   }, [isOpen]);
+
   const handleGoogleLogin = async () => {
     setLoading(true);
     setAuthMethod('google');
@@ -73,6 +73,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setLoading(false);
     }
   };
+
   const handleGoogleCallback = async (code: string, state: string) => {
     setLoading(true);
     try {
@@ -98,6 +99,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setLoading(false);
     }
   };
+
   const handleEmailLogin = async () => {
     if (!email || !email.includes('@')) {
       toast({
@@ -135,6 +137,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setLoading(false);
     }
   };
+
   const handleLogout = () => {
     googleAuthService.logout();
     setGoogleUser(null);
@@ -143,15 +146,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       description: "Você foi desconectado com sucesso."
     });
   };
+
   const resetModal = () => {
     setAuthMethod('select');
     setEmail('');
     setLoading(false);
   };
+
   const handleClose = () => {
     resetModal();
     onClose();
   };
+
   const openSwapModal = () => {
     setShowSwapModal(true);
   };
@@ -209,6 +215,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         <SwapModal isOpen={showSwapModal} onClose={() => setShowSwapModal(false)} />
       </>;
   }
+
   return <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-md">
@@ -243,9 +250,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
                 <div className="text-center text-sm text-gray-500">ou</div>
 
-                {/* Conectar Carteira Web3 */}
-                <ConnectButton />
-
                 {/* Login com Email */}
                 <Button onClick={() => setAuthMethod('email')} className="w-full flex items-center gap-3 p-4 border-2 border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-800 font-medium rounded-lg transition-colors" variant="ghost">
                   <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
@@ -257,9 +261,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   </div>
                 </Button>
               </div>
-
-              {/* Funcionalidades disponíveis */}
-              
             </div>}
 
           {authMethod === 'google' && loading && <div className="space-y-4">
