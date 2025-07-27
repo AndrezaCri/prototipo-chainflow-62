@@ -1,16 +1,20 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, ShoppingCart, User, Menu } from 'lucide-react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { AuthModal } from './AuthModal';
+
 export const Header: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(true); // Changed to true by default
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Searching for:', searchQuery);
   };
+
   return <>
       <a href="#main-content" className="skip-link">
         Pular para o conteúdo principal
@@ -23,20 +27,7 @@ export const Header: React.FC = () => {
         </div>
       
       <nav className="flex items-center gap-6 max-md:hidden">
-       {/*div className="flex items-center cursor-pointer hover:opacity-70 transition-opacity">
-          <span className="text-base font-normal text-black">Shop</span>
-          <span className="text-sm text-black ml-1">▼</span>
-        </div>
-        <a href="#" className="text-base font-normal text-black cursor-pointer hover:opacity-70 transition-opacity">
-          On Sale
-        </a>
-        <a href="#" className="text-base font-normal text-black cursor-pointer hover:opacity-70 transition-opacity">
-          New Arrivals
-        </a>
-        <a href="#" className="text-base font-normal text-black cursor-pointer hover:opacity-70 transition-opacity">
-          Brands
-        </a>*/}
-        <Link to="/defi-investor" className="text-base font-normal text-black cursor-pointer hover:opacity-70 transition-opacity">   DeFi Investors</Link>
+        <Link to="/defi-investor" className="text-base font-normal text-black cursor-pointer hover:opacity-70 transition-opacity">   DeFi Investors</Link>
         
       </nav>
       
@@ -65,28 +56,29 @@ export const Header: React.FC = () => {
         <Menu className="h-5 w-5" />
       </button>
       
-      {isMobileMenuOpen && <div className="absolute top-full left-0 right-0 bg-white border-t border-[#f0f0f0] p-4 md:hidden z-50">
-          <nav className="flex flex-col gap-4">
-            <a href="#" className="text-base font-normal text-black">Shop</a>
-            <a href="#" className="text-base font-normal text-black">On Sale</a>
-            <a href="#" className="text-base font-normal text-black">New Arrivals</a>
-            <a href="#" className="text-base font-normal text-black">Brands</a>
-            <Link to="/defi-investor" className="text-base font-normal text-black">DeFi Investor</Link>
-            <Link to="/credit-hub" className="text-base font-normal text-black">Credit Hub</Link>
-            
-            {/* Botão de Login no menu móvel */}
-            <div className="mt-4">
-              <button onClick={() => setIsAuthModalOpen(true)} className="w-full bg-[#c1e428] text-black px-6 py-2 rounded-full font-medium hover:bg-[#a8c424] transition-colors">
-                Entrar
-              </button>
-            </div>
-            
-            <form onSubmit={handleSearch} className="relative mt-4">
-              <span className="absolute -translate-y-2/4 text-xl text-[#666666] left-4 top-2/4">🔍</span>
-              <input type="search" placeholder="Search for products..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="w-full bg-[#f0f0f0] text-base font-normal text-black pl-12 pr-4 py-3 rounded-[62px] border-none focus:outline-none focus:ring-2 focus:ring-black/20" />
-            </form>
-          </nav>
-        </div>}
+      {/* Menu móvel agora sempre visível */}
+      <div className="absolute top-full left-0 right-0 bg-white border-t border-[#f0f0f0] p-4 md:hidden z-50">
+        <nav className="flex flex-col gap-4">
+          <a href="#" className="text-base font-normal text-black">Shop</a>
+          <a href="#" className="text-base font-normal text-black">On Sale</a>
+          <a href="#" className="text-base font-normal text-black">New Arrivals</a>
+          <a href="#" className="text-base font-normal text-black">Brands</a>
+          <Link to="/defi-investor" className="text-base font-normal text-black">DeFi Investor</Link>
+          <Link to="/credit-hub" className="text-base font-normal text-black">Credit Hub</Link>
+          
+          {/* Botão de Login no menu móvel */}
+          <div className="mt-4">
+            <button onClick={() => setIsAuthModalOpen(true)} className="w-full bg-[#c1e428] text-black px-6 py-2 rounded-full font-medium hover:bg-[#a8c424] transition-colors">
+              Entrar
+            </button>
+          </div>
+          
+          <form onSubmit={handleSearch} className="relative mt-4">
+            <span className="absolute -translate-y-2/4 text-xl text-[#666666] left-4 top-2/4">🔍</span>
+            <input type="search" placeholder="Search for products..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="w-full bg-[#f0f0f0] text-base font-normal text-black pl-12 pr-4 py-3 rounded-[62px] border-none focus:outline-none focus:ring-2 focus:ring-black/20" />
+          </form>
+        </nav>
+      </div>
       
       {/* Modal de Autenticação */}
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
