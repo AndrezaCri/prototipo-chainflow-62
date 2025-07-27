@@ -51,14 +51,23 @@ export const Header: React.FC = () => {
         </button>
       </div>
       
-      {/* Substituir ícone de hambúrguer por DeFi Investors em mobile */}
-      <Link 
-        to="/defi-investor" 
-        className="text-base font-normal text-black cursor-pointer hover:opacity-70 transition-opacity md:hidden"
-        aria-label="Ir para DeFi Investors"
-      >
-        DeFi Investors
-      </Link>
+      {/* Seção mobile com DeFi Investors e botão Entrar */}
+      <div className="flex items-center gap-4 md:hidden">
+        <Link 
+          to="/defi-investor" 
+          className="text-base font-normal text-black cursor-pointer hover:opacity-70 transition-opacity"
+          aria-label="Ir para DeFi Investors"
+        >
+          DeFi Investors
+        </Link>
+        
+        <button 
+          onClick={() => setIsAuthModalOpen(true)} 
+          className="bg-[#c1e428] text-black px-4 py-2 rounded-full font-medium hover:bg-[#a8c424] transition-colors text-sm"
+        >
+          Entrar
+        </button>
+      </div>
       
       {/* Menu móvel agora sempre visível */}
       <div className="absolute top-full left-0 right-0 bg-white border-t border-[#f0f0f0] p-4 md:hidden z-50">
