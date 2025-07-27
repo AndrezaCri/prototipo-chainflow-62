@@ -170,9 +170,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 <span>Total Geral:</span>
                 <div className="text-right">
                   <div>R$ {totalValue.toFixed(2)}</div>
-                  <div className="text-sm text-muted-foreground font-normal">
-                    ≈ {usdcAmount.toFixed(6)} USDC
-                  </div>
+                  
                 </div>
               </div>
               
