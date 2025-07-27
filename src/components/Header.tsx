@@ -7,7 +7,7 @@ import { AuthModal } from './AuthModal';
 
 export const Header: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(true); // Changed to true by default
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -27,8 +27,7 @@ export const Header: React.FC = () => {
         </div>
       
       <nav className="flex items-center gap-6 max-md:hidden">
-        <Link to="/defi-investor" className="text-base font-normal text-black cursor-pointer hover:opacity-70 transition-opacity">   DeFi Investors</Link>
-        
+        <Link to="/defi-investor" className="text-base font-normal text-black cursor-pointer hover:opacity-70 transition-opacity">DeFi Investors</Link>
       </nav>
       
       <form onSubmit={handleSearch} className="relative hidden w-96 sm:block lg:w-[500px]" role="search">
@@ -52,9 +51,14 @@ export const Header: React.FC = () => {
         </button>
       </div>
       
-      <button className="rounded-full p-2 text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} aria-label="Abrir menu móvel" aria-expanded={isMobileMenuOpen}>
-        <Menu className="h-5 w-5" />
-      </button>
+      {/* Substituir ícone de hambúrguer por DeFi Investors em mobile */}
+      <Link 
+        to="/defi-investor" 
+        className="text-base font-normal text-black cursor-pointer hover:opacity-70 transition-opacity md:hidden"
+        aria-label="Ir para DeFi Investors"
+      >
+        DeFi Investors
+      </Link>
       
       {/* Menu móvel agora sempre visível */}
       <div className="absolute top-full left-0 right-0 bg-white border-t border-[#f0f0f0] p-4 md:hidden z-50">
