@@ -8,12 +8,10 @@ import { User, Mail, Wallet, Shield, TrendingUp, RefreshCw, ArrowUpDown } from '
 import { useToast } from '@/hooks/use-toast';
 import { googleAuthService, GoogleUser } from '@/services/googleAuth';
 import { SwapModal } from './SwapModal';
-
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
 export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
   onClose
@@ -44,7 +42,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       handleGoogleCallback(code, state);
     }
   }, [isOpen]);
-
   const handleGoogleLogin = async () => {
     setLoading(true);
     setAuthMethod('google');
@@ -76,7 +73,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setLoading(false);
     }
   };
-
   const handleGoogleCallback = async (code: string, state: string) => {
     setLoading(true);
     try {
@@ -102,7 +98,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setLoading(false);
     }
   };
-
   const handleEmailLogin = async () => {
     if (!email || !email.includes('@')) {
       toast({
@@ -140,7 +135,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setLoading(false);
     }
   };
-
   const handleLogout = () => {
     googleAuthService.logout();
     setGoogleUser(null);
@@ -149,18 +143,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       description: "Você foi desconectado com sucesso."
     });
   };
-
   const resetModal = () => {
     setAuthMethod('select');
     setEmail('');
     setLoading(false);
   };
-
   const handleClose = () => {
     resetModal();
     onClose();
   };
-
   const openSwapModal = () => {
     setShowSwapModal(true);
   };
@@ -218,7 +209,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         <SwapModal isOpen={showSwapModal} onClose={() => setShowSwapModal(false)} />
       </>;
   }
-
   return <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-md">
@@ -269,30 +259,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </div>
 
               {/* Funcionalidades disponíveis */}
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
-                  <ArrowUpDown className="h-4 w-4 text-[#c1e428]" />
-                  Funcionalidades disponíveis:
-                </h4>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  <li className="flex items-center gap-2">
-                    <ArrowUpDown className="h-3 w-3 text-[#c1e428]" />
-                    SWAP USDC ⇄ BRZ na Base Sepolia
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <TrendingUp className="h-3 w-3 text-[#c1e428]" />
-                    Acesso ao crédito ChainFlow
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Shield className="h-3 w-3 text-[#c1e428]" />
-                    Compras B2B facilitadas
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Wallet className="h-3 w-3 text-[#c1e428]" />
-                    Transações seguras
-                  </li>
-                </ul>
-              </div>
+              
             </div>}
 
           {authMethod === 'google' && loading && <div className="space-y-4">
